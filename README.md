@@ -1,6 +1,6 @@
 # ping-am-samples
 
-A collection of sample applications and configurations demonstrating integration with Ping Identity Access Management (AM) products.
+A collection of sample applications and configurations demonstrating integration with Ping Identity Access Management AM.
 
 ## Overview
 
