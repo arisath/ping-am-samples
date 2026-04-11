@@ -1,0 +1,45 @@
+{
+  "metadata" : {
+    "realm" : null,
+    "amsterVersion" : "8.1.0",
+    "entityType" : "CORSService",
+    "entityId" : "CORSService",
+    "pathParams" : { }
+  },
+  "data" : {
+    "_id" : "",
+    "enabled" : true,
+    "_type" : {
+      "_id" : "CorsService",
+      "name" : "CORS Service",
+      "collection" : false
+    }
+  }
+}root@5b3120ff78e2:/tmp/global# cd CorsConfiguration
+root@5b3120ff78e2:/tmp/global/CorsConfiguration# ls
+cors.json
+root@5b3120ff78e2:/tmp/global/CorsConfiguration# cat cors.json
+{
+  "metadata" : {
+    "realm" : null,
+    "amsterVersion" : "8.1.0",
+    "entityType" : "CorsConfiguration",
+    "entityId" : "cors",
+    "pathParams" : { }
+  },
+  "data" : {
+    "_id" : "cors",
+    "maxAge" : 0,
+    "exposedHeaders" : [ "*" ],
+    "acceptedHeaders" : [ "Authorization", "Content-Type", "Accept" ],
+    "allowCredentials" : false,
+    "acceptedMethods" : [ "POST", "GET", "OPTIONS" ],
+    "enabled" : true,
+    "acceptedOrigins" : [ "http://localhost:3000", "http://localhost:3000/" ],
+    "_type" : {
+      "_id" : "configuration",
+      "name" : "Cors Configuration",
+      "collection" : true
+    }
+  }
+}

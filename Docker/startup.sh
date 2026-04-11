@@ -52,6 +52,39 @@ EOF
 
 echo "Configuration complete."
 
+count=0
+echo "Waiting for AM to reach READY state..."
+
+# We check for a 200 OK from the health/ready endpoint
+# This confirms the server is up AND the backend stores are connected
+until [ "$status" == "200" ]; do
+    status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/am/json/health/ready)
+
+    if [ "$status" == "200" ]; then
+        echo -e "\n[SUCCESS] AM is fully initialized and ready for traffic."
+        break
+    fi
+
+    if [ $count -eq $max_attempts ]; then
+        echo -e "\n[ERROR] AM failed to reach ready state within timeout."
+        echo "Last status code: $status"
+        echo "Check /usr/local/tomcat/logs/catalina.out for stack traces."
+        exit 1
+    fi
+
+    printf "."
+    count=$((count+1))
+    sleep 5
+done
+
+
+/usr/local/amster/amster <<EOF
+connect  -k /home/am/config/security/keys/amster/amster_rsa http://localhost:8080/am
+import-config --path /usr/local/amster-config
+exit
+EOF
+
+
 # 4. Bring Tomcat to foreground to keep container running
 # We tail the log so the container output stays active
 tail -f /usr/local/tomcat/logs/catalina.out
