@@ -29,7 +29,21 @@ install-openam  --acceptLicense \
 --adminPwd password \
 --cfgDir /home/am/config \
 --cookieDomain localhost \
---acceptLicense
+--cfgStorePort 1389 \
+--cfgStoreRootSuffix ou=am-config \
+--cfgStore dirServer \
+--cfgStoreDirMgr uid=am-config,ou=admins,ou=am-config \
+--cfgStoreHost localhost \
+--cfgStoreAdminPort 4444 \
+--cfgStoreSsl SIMPLE \
+--cfgStoreDirMgrPwd password \
+--userStoreDirMgrPwd password \
+ --userStoreHost localhost \
+ --userStoreType LDAPv3ForOpenDS \
+ --userStorePort 1389 \
+ --userStoreSsl SIMPLE \
+ --userStoreDirMgr uid=admin \
+ --userStoreRootSuffix "dc=example,dc=com"
 exit
 EOF
 
