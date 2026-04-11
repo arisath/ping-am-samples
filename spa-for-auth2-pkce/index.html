@@ -2,35 +2,62 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AM PKCE SPA</title>
+    <title>AM PKCE SPA - OIDC Decoder</title>
     <style>
-        body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 800px; margin: auto; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
-        pre { background: #f4f4f4; padding: 15px; overflow-x: auto; border-radius: 5px; }
+        body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 900px; margin: auto; line-height: 1.5; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; overflow-x: auto; border-radius: 8px; font-size: 13px; }
         .hidden { display: none; }
+        .label { font-weight: bold; color: #555; margin-top: 1.5rem; display: block; }
+        h4 { margin-bottom: 0.5rem; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
     </style>
 </head>
 <body>
 <h1>SPA + ForgeRock AM (PKCE)</h1>
 
 <div id="login-section">
+    <p>This SPA demonstrates a secure OAuth2 PKCE flow with manual JWT decoding.</p>
     <button onclick="login()">Log In with AM</button>
 </div>
 
 <div id="app-section" class="hidden">
-    <h3>Authenticated!</h3>
-    <button onclick="logout()">Log Out</button>
-    <h4>Access Token:</h4>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Authenticated!</h3>
+        <button onclick="logout()" style="background: #dc3545;">Log Out</button>
+    </div>
+
+    <h4>Decoded ID Token (OIDC Claims):</h4>
+    <pre id="decoded-output"></pre>
+
+    <h4>Raw Token Response:</h4>
     <pre id="token-output"></pre>
 </div>
 
 <script>
     // --- Configuration ---
-    // Adjust the realm if you aren't using the root/Top Level realm
     const AM_URL = "http://localhost:8080/am/oauth2/realms/root";
     const CLIENT_ID = "my-spa-client";
     const REDIRECT_URI = "http://localhost:3000/";
-    const SCOPE = "openid profile";
+    const SCOPE = "openid profile"; // Added email to see more claims
+
+    // --- JWT Decoder Utility ---
+    function parseJwt(token) {
+        try {
+            // Get the payload (second part of the JWT)
+            const base64Url = token.split('.')[1];
+            // Convert Base64Url to standard Base64
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            // Decode to JSON string and parse
+            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            return { error: "Failed to decode ID Token" };
+        }
+    }
 
     // --- PKCE Crypto Utilities ---
     function generateRandomString(length) {
@@ -43,26 +70,19 @@
         const encoder = new TextEncoder();
         const data = encoder.encode(codeVerifier);
         const digest = await window.crypto.subtle.digest('SHA-256', data);
-
-        // Base64URL encode the SHA-256 hash
         return btoa(String.fromCharCode.apply(null, new Uint8Array(digest)))
             .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
     // --- Core Auth Flow ---
     async function login() {
-        // 1. Generate State and Verifier
         const state = generateRandomString(32);
         const codeVerifier = generateRandomString(64);
-
-        // Store them to verify/exchange after the redirect
         sessionStorage.setItem("pkce_state", state);
         sessionStorage.setItem("pkce_verifier", codeVerifier);
 
-        // 2. Generate the Challenge
         const codeChallenge = await generateCodeChallenge(codeVerifier);
 
-        // 3. Build the AM Authorization URL
         const authUrl = new URL(`${AM_URL}/authorize`);
         authUrl.searchParams.append("response_type", "code");
         authUrl.searchParams.append("client_id", CLIENT_ID);
@@ -72,7 +92,6 @@
         authUrl.searchParams.append("code_challenge", codeChallenge);
         authUrl.searchParams.append("code_challenge_method", "S256");
 
-        // 4. Redirect the browser to AM
         window.location.href = authUrl.toString();
     }
 
@@ -81,20 +100,18 @@
         const code = params.get("code");
         const state = params.get("state");
 
-        if (!code) return; // Not a callback
+        if (!code) return;
 
         const savedState = sessionStorage.getItem("pkce_state");
         const codeVerifier = sessionStorage.getItem("pkce_verifier");
 
         if (state !== savedState) {
-            alert("State mismatch! Security error.");
+            alert("State mismatch!");
             return;
         }
 
-        // Clean up the URL
         window.history.replaceState({}, document.title, REDIRECT_URI);
 
-        // 5. Exchange the Code for an Access Token
         try {
             const response = await fetch(`${AM_URL}/access_token`, {
                 method: "POST",
@@ -104,7 +121,7 @@
                     client_id: CLIENT_ID,
                     redirect_uri: REDIRECT_URI,
                     code: code,
-                    code_verifier: codeVerifier // AM hashes this to compare with the initial challenge
+                    code_verifier: codeVerifier
                 })
             });
 
@@ -115,11 +132,20 @@
             // Show UI
             document.getElementById("login-section").classList.add("hidden");
             document.getElementById("app-section").classList.remove("hidden");
+
+            // Decode the ID Token if it exists
+            if (tokens.id_token) {
+                const decoded = parseJwt(tokens.id_token);
+                document.getElementById("decoded-output").textContent = JSON.stringify(decoded, null, 2);
+            } else {
+                document.getElementById("decoded-output").textContent = "No ID Token found in response. Ensure 'openid' scope was used.";
+            }
+
+            // Show raw response
             document.getElementById("token-output").textContent = JSON.stringify(tokens, null, 2);
 
         } catch (error) {
             console.error("Token exchange failed:", error);
-            alert("Failed to get token. Check console.");
         }
     }
 
@@ -128,7 +154,6 @@
         window.location.reload();
     }
 
-    // Run on page load
     handleCallback();
 </script>
 </body>
