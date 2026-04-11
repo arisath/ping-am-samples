@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AM PKCE SPA</title>
+    <style>
+        body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 800px; margin: auto; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        pre { background: #f4f4f4; padding: 15px; overflow-x: auto; border-radius: 5px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+<h1>SPA + ForgeRock AM (PKCE)</h1>
+
+<div id="login-section">
+    <button onclick="login()">Log In with AM</button>
+</div>
+
+<div id="app-section" class="hidden">
+    <h3>Authenticated!</h3>
+    <button onclick="logout()">Log Out</button>
+    <h4>Access Token:</h4>
+    <pre id="token-output"></pre>
+</div>
+
+<script>
+    // --- Configuration ---
+    // Adjust the realm if you aren't using the root/Top Level realm
+    const AM_URL = "http://localhost:8080/am/oauth2/realms/root";
+    const CLIENT_ID = "my-spa-client";
+    const REDIRECT_URI = "http://localhost:3000/";
+    const SCOPE = "openid profile";
+
+    // --- PKCE Crypto Utilities ---
+    function generateRandomString(length) {
+        const array = new Uint32Array(length / 2);
+        window.crypto.getRandomValues(array);
+        return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
+    }
+
+    async function generateCodeChallenge(codeVerifier) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(codeVerifier);
+        const digest = await window.crypto.subtle.digest('SHA-256', data);
+
+        // Base64URL encode the SHA-256 hash
+        return btoa(String.fromCharCode.apply(null, new Uint8Array(digest)))
+            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    // --- Core Auth Flow ---
+    async function login() {
+        // 1. Generate State and Verifier
+        const state = generateRandomString(32);
+        const codeVerifier = generateRandomString(64);
+
+        // Store them to verify/exchange after the redirect
+        sessionStorage.setItem("pkce_state", state);
+        sessionStorage.setItem("pkce_verifier", codeVerifier);
+
+        // 2. Generate the Challenge
+        const codeChallenge = await generateCodeChallenge(codeVerifier);
+
+        // 3. Build the AM Authorization URL
+        const authUrl = new URL(`${AM_URL}/authorize`);
+        authUrl.searchParams.append("response_type", "code");
+        authUrl.searchParams.append("client_id", CLIENT_ID);
+        authUrl.searchParams.append("redirect_uri", REDIRECT_URI);
+        authUrl.searchParams.append("scope", SCOPE);
+        authUrl.searchParams.append("state", state);
+        authUrl.searchParams.append("code_challenge", codeChallenge);
+        authUrl.searchParams.append("code_challenge_method", "S256");
+
+        // 4. Redirect the browser to AM
+        window.location.href = authUrl.toString();
+    }
+
+    async function handleCallback() {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get("code");
+        const state = params.get("state");
+
+        if (!code) return; // Not a callback
+
+        const savedState = sessionStorage.getItem("pkce_state");
+        const codeVerifier = sessionStorage.getItem("pkce_verifier");
+
+        if (state !== savedState) {
+            alert("State mismatch! Security error.");
+            return;
+        }
+
+        // Clean up the URL
+        window.history.replaceState({}, document.title, REDIRECT_URI);
+
+        // 5. Exchange the Code for an Access Token
+        try {
+            const response = await fetch(`${AM_URL}/access_token`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({
+                    grant_type: "authorization_code",
+                    client_id: CLIENT_ID,
+                    redirect_uri: REDIRECT_URI,
+                    code: code,
+                    code_verifier: codeVerifier // AM hashes this to compare with the initial challenge
+                })
+            });
+
+            if (!response.ok) throw new Error(await response.text());
+
+            const tokens = await response.json();
+
+            // Show UI
+            document.getElementById("login-section").classList.add("hidden");
+            document.getElementById("app-section").classList.remove("hidden");
+            document.getElementById("token-output").textContent = JSON.stringify(tokens, null, 2);
+
+        } catch (error) {
+            console.error("Token exchange failed:", error);
+            alert("Failed to get token. Check console.");
+        }
+    }
+
+    function logout() {
+        sessionStorage.clear();
+        window.location.reload();
+    }
+
+    // Run on page load
+    handleCallback();
+</script>
+</body>
+</html>

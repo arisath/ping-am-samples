@@ -1,5 +1,8 @@
 #!/bin/bash
 set -e
+
+/usr/local/ds-install.sh
+
 # 1. Start Tomcat in the background
 catalina.sh start
 

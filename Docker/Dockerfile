@@ -13,6 +13,7 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 COPY am.war /usr/local/tomcat/webapps/am.war
 COPY amster /usr/local/amster
 COPY startup.sh /usr/local/
+COPY ds-install.sh /usr/local/
 
 
 COPY opendj /usr/local/opendj

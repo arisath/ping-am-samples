@@ -1,3 +1,4 @@
 *.war
-/amster
+/Docker/amster
 .idea
+opendj

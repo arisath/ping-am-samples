@@ -1,4 +1,4 @@
-./setup \
+/usr/local/opendj/setup \
  --deploymentId AVD1SbAikgKUsNy3NXu2l_1LgDTkTWA5CBVN1bkVDAIRJr0sU9KU0TmY \
  --deploymentIdPassword password \
  --rootUserDN uid=admin \
@@ -20,5 +20,6 @@
 --hostname localhost \
  --set am-cts/amCtsAdminPassword:password
 
+/usr/local/opendj/bin/start-ds
 
 /usr/local/opendj/bin/dsconfig set-password-policy-prop   --policy-name "Default Password Policy"   --set require-secure-authentication:false   --hostname localhost   --port 4444   --bindDN "uid=admin"   --bindPassword password   --trustAll   --no-prompt
