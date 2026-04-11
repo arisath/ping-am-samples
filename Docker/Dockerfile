@@ -1,27 +1,20 @@
 FROM tomcat:11-jdk25
 
-RUN apt-get update \
- && apt-get install -y curl \
- && rm -rf /var/lib/apt/lists/*
+# Combine package install and cleanup
+RUN apt-get update && apt-get install -y curl \
+    && rm -rf /var/lib/apt/lists/* /usr/local/tomcat/webapps/*
 
-# Remove default webapps to keep it clean
-RUN rm -rf /usr/local/tomcat/webapps/*
+# 1. Copy individual scripts directly to /usr/local/
+COPY --chmod=775 startup.sh ds-install.sh /usr/local/
 
+# 2. Copy directories (this preserves the folder name at the destination)
+COPY --chmod=775 amster /usr/local/amster/
+COPY --chmod=775 amster-config /usr/local/amster-config/
+COPY --chmod=775 opendj /usr/local/opendj/
 
-
-# Copy your WAR file (from your previous error) into the deployment folder
+# 3. Copy the WAR
 COPY am.war /usr/local/tomcat/webapps/am.war
-COPY amster /usr/local/amster
-COPY startup.sh /usr/local/
-COPY ds-install.sh /usr/local/
-COPY amster-config /usr/local
-
-COPY opendj /usr/local/opendj
-
-
-RUN chmod 775 /usr/local/*
-RUN chmod 775 /usr/local/opendj/setup
-
 
 EXPOSE 8080
-CMD ["/usr/local/startup.sh", "run"]
+ENTRYPOINT ["/usr/local/startup.sh"]
+CMD ["run"]
