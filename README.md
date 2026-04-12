@@ -93,6 +93,33 @@ The `spa-for-oauth2-implicit/` directory contains a single-page application that
 
 - Legacy Web Application Patterns: Demonstrating how "Public Clients" functioned before the standardization of PKCE for browser-based apps.
 
+```mermaid
+sequenceDiagram
+    participant User
+    participant SPA as Browser (Implicit App)
+    participant AM as ForgeRock AM
+
+    note over SPA: 1. Start Flow (login())
+    User->>SPA: Click "Log In (Implicit)"
+    SPA->>AM: Redirect (GET /authorize)<br>Includes: response_type=token id_token, nonce=xyz123...
+
+    note over AM: 2. Authentication
+    User->>AM: Direct Login (AM Console)
+    AM-->>User: Success (Session Created)
+
+    note over AM: 3. Token Delivery (The "Front-Channel")
+    AM->>SPA: Redirect back (Callback URI)<br>Includes: #access_token=...&id_token=...
+    note right of AM: Tokens are appended to the URL fragment (#)
+
+    note over SPA: 4. The Extraction (handleCallback())
+    SPA->>SPA: Read tokens from window.location.hash
+    SPA->>SPA: Clean URL (replaceState) to hide tokens
+    
+    note over SPA: 5. Display
+    SPA->>SPA: parseJwt(id_token)
+    SPA->>User: Show "Authenticated" UI & Decoded Claims
+```
+
 ### OAuth2 Authorization Code
 
 The `backendapp-for-oauth2-code-grant/` directory contains a Node.js server-side application that demonstrates:
