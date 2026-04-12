@@ -45,6 +45,44 @@ The `spa-for-auth2-pkce/` directory contains a single-page application that demo
 - Client-side authentication with Ping AM
 - Modern web application integration patterns
 
+```mermaid
+sequenceDiagram
+participant User
+participant SPA as Browser (Your App)
+participant AM as ForgeRock AM
+
+    note over SPA: 1. Start Flow (login())
+    User->>SPA: Click "Log In"
+    SPA->>SPA: Create random String: 'state' (CSRF)
+    SPA->>SPA: Create random String: 'code_verifier'
+    SPA->>SPA: Hash verifier: SHA-256 ('code_challenge')
+    SPA->>SPA: Store in SessionStorage:<br>'pkce_state', 'pkce_verifier'
+    SPA->>AM: Redirect (GET /authorize)<br>Includes: code_challenge, code_challenge_method=S256, state...
+
+    note over AM: 2. Authentication
+    User->>AM: Direct Login (AM Console)
+    AM-->>User: (MFA Challenge/Success)
+
+    note over AM: 3. Authorization Grant
+    AM->>SPA: Redirect back (Callback URI)<br>Includes: code=xyz123, state=abc
+
+    note over SPA: 4. The Exchange (handleCallback())
+    SPA->>SPA: Get 'code' & 'state' from URL
+    SPA->>SPA: Validate: URL state == stored 'pkce_state'
+    SPA->>SPA: Retrieve stored 'pkce_verifier'
+    SPA->>SPA: Clean URL (replaceState)
+
+    note over SPA, AM: 5. Back-channel Secret Handshake
+    SPA->>AM: Direct POST /access_token<br>Includes: grant_type=authorization_code, code, code_verifier...
+    note over AM: Validate:<br>1. Code is valid<br>2. HASH(code_verifier) == HASH sent in Step 1
+
+    AM-->>SPA: Success: Return Tokens (JSON)<br>Includes: id_token, access_token
+
+    note over SPA: 6. Completion
+    SPA->>SPA: decodeJwt(id_token) to display claims
+    SPA->>User: Display "Authenticated" UI
+```
+
 ### OAuth2 Implicit flow (legacy)
 
 The `spa-for-oauth2-implicit/` directory contains a single-page application that demonstrates:
