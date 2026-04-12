@@ -37,7 +37,7 @@ The `Docker/` directory contains all necessary files to containerize Ping AM env
 
 ## OAuth2 Grant types examples
 
-### spa-for-auth2-pkce 
+### OAuth2 Authorization Code with Proof Key for Code Exchange (PKCE)
 
 The `spa-for-auth2-pkce/` directory contains a single-page application that demonstrates:
 
@@ -45,7 +45,7 @@ The `spa-for-auth2-pkce/` directory contains a single-page application that demo
 - Client-side authentication with Ping AM
 - Modern web application integration patterns
 
-### spa-for-oauth2-implicit 
+### OAuth2 Implicit flow (legacy)
 
 The `spa-for-oauth2-implicit/` directory contains a single-page application that demonstrates:
 
@@ -55,7 +55,7 @@ The `spa-for-oauth2-implicit/` directory contains a single-page application that
 
 - Legacy Web Application Patterns: Demonstrating how "Public Clients" functioned before the standardization of PKCE for browser-based apps.
 
-### backendapp-for-oauth2-code-grant
+### OAuth2 Authorization Code
 
 The `backendapp-for-oauth2-code-grant/` directory contains a Node.js server-side application that demonstrates:
 
