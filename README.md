@@ -129,6 +129,45 @@ The `backendapp-for-oauth2-code-grant/` directory contains a Node.js server-side
 - Confidential Client Authentication: Uses a client_id and client_secret with the client_secret_basic authentication method (credentials sent via HTTP Authorization header).
 
 - Session Management: Implementation of express-session to maintain user state and store tokens securely on the server-side, away from the browser.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Browser
+    participant NodeApp as Node.js Backend
+    participant AM as ForgeRock AM
+
+    note over NodeApp: 1. Initiation
+    User->>Browser: Click "Log In"
+    Browser->>NodeApp: GET /login
+    NodeApp-->>Browser: 302 Redirect to AM<br/>(client_id, response_type=code)
+
+    note over AM: 2. Authentication
+    Browser->>AM: GET /authorize
+    User->>AM: Enter Credentials
+    AM-->>User: Success (Session Cookie)
+
+    note over AM: 3. Delivery of Authorization Code
+    AM-->>Browser: 302 Redirect to /callback?code=xyz...
+    Browser->>NodeApp: GET /callback?code=xyz...
+
+    note over NodeApp, AM: 4. The Exchange (Back-Channel)
+    NodeApp->>NodeApp: Create Basic Auth Header<br/>(base64(ID:Secret))
+    NodeApp->>AM: POST /access_token<br/>(code + Basic Auth)
+    note right of NodeApp: This happens server-to-server
+
+    AM-->>NodeApp: Returns JSON (access_token, id_token)
+
+    note over NodeApp: 5. Session Establishment
+    NodeApp->>NodeApp: decodeIdToken()
+    NodeApp->>NodeApp: Store tokens in req.session
+    NodeApp-->>Browser: 302 Redirect to /profile
+
+    note over Browser: 6. Secure View
+    Browser->>NodeApp: GET /profile
+    NodeApp-->>Browser: Render HTML with Decoded Claims
+```
+
 ## Getting Started
 
 ### Prerequisites
