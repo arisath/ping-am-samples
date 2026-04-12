@@ -2,3 +2,5 @@
 /Docker/amster
 .idea
 opendj
+node_modules/
+.DS_Store
