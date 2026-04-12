@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AM Legacy Implicit Flow</title>
+    <style>
+        body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 900px; margin: auto; line-height: 1.5; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #ed8936; color: white; border: none; border-radius: 4px; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; overflow-x: auto; border-radius: 8px; font-size: 13px; }
+        .hidden { display: none; }
+        .warning { background: #fff5f5; border: 1px solid #feb2b2; padding: 10px; color: #c53030; border-radius: 5px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+<h1>SPA + ForgeRock AM (Implicit Flow)</h1>
+<div class="warning">
+    <strong>Security Note:</strong> This is a legacy flow. Tokens are exposed in the URL fragment.
+</div>
+
+<div id="login-section">
+    <button onclick="login()">Log In (Implicit)</button>
+</div>
+
+<div id="app-section" class="hidden">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3>Authenticated!</h3>
+        <button onclick="logout()" style="background: #dc3545;">Log Out</button>
+    </div>
+
+    <h4>Decoded ID Token:</h4>
+    <pre id="decoded-output"></pre>
+
+    <h4>Extracted from URL Hash:</h4>
+    <pre id="token-output"></pre>
+</div>
+
+<script>
+    const AM_URL = "http://localhost:8080/am/oauth2/realms/root";
+    const CLIENT_ID = "my-spa-client";
+    const REDIRECT_URI = "http://localhost:3002/";
+    const SCOPE = "openid profile";
+
+    function parseJwt(token) {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            return JSON.parse(window.atob(base64));
+        } catch (e) { return { error: "Decode failed" }; }
+    }
+
+    function login() {
+        const authUrl = new URL(`${AM_URL}/authorize`);
+        // response_type "token id_token" asks for both Access and Identity tokens
+        authUrl.searchParams.append("response_type", "token id_token");
+        authUrl.searchParams.append("client_id", CLIENT_ID);
+        authUrl.searchParams.append("redirect_uri", REDIRECT_URI);
+        authUrl.searchParams.append("scope", SCOPE);
+        authUrl.searchParams.append("nonce", "xyz123"); // Nonce is required for Implicit OIDC
+
+        window.location.href = authUrl.toString();
+    }
+
+    function handleCallback() {
+        // Implicit flow tokens are in the #fragment, not the ?query
+        const hash = window.location.hash.substring(1);
+        if (!hash) return;
+
+        const params = new URLSearchParams(hash);
+        const accessToken = params.get("access_token");
+        const idToken = params.get("id_token");
+
+        if (accessToken || idToken) {
+            // Clean up the URL hash immediately
+            window.history.replaceState({}, document.title, REDIRECT_URI);
+
+            document.getElementById("login-section").classList.add("hidden");
+            document.getElementById("app-section").classList.remove("hidden");
+
+            if (idToken) {
+                document.getElementById("decoded-output").textContent = JSON.stringify(parseJwt(idToken), null, 2);
+            }
+
+            // Show what we grabbed from the hash
+            const results = {};
+            params.forEach((value, key) => { results[key] = value; });
+            document.getElementById("token-output").textContent = JSON.stringify(results, null, 2);
+        }
+    }
+
+    function logout() {
+        window.location.href = REDIRECT_URI;
+    }
+
+    handleCallback();
+</script>
+</body>
+</html>
