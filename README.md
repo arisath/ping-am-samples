@@ -10,14 +10,18 @@ This repository contains various sample applications and configuration files tha
 
 ```
 ping-am-samples/
-├── Docker/                 # Docker configuration and containerization samples
-│   ├── Dockerfile          # Dockerfile for building container images
-│   ├── amster-config/      # AMster configuration files
-│   ├── ds-install.sh       # Directory Server installation script
-│   └── startup.sh          # Startup script for container initialization
-├── spa-for-auth2-pkce/     # Single Page Application demonstrating OAuth 2.0 PKCE flow
-│   └── index.html          # Main HTML file for the SPA
-└── README.md               # This file
+├── Docker/                            # Docker configuration and containerization samples
+│   ├── Dockerfile                     # Dockerfile for building container images
+│   ├── amster-config/                 # AMster configuration files
+│   ├── ds-install.sh                  # Directory Server installation script
+│   └── startup.sh                     # Startup script for container initialization
+├── spa-for-oauth2-pkce/               # Single Page Application demonstrating OAuth 2.0 PKCE flow
+│   └── index.html                     # Main HTML file for the SPA
+├── spa-for-oauth2-implicit/           # Single Page Application demonstrating OAuth 2.0 Implicit flow
+│   └── index.html                     # Main HTML file for the SPA
+├── backendapp-for-oauth2-code-grant/  # Backend Application demonstrating OAuth 2.0 Code grant flow
+│   └── server.js                      # Backend logic
+└── README.md                          # This file
 ```
 
 ## Components
@@ -31,7 +35,9 @@ The `Docker/` directory contains all necessary files to containerize Ping AM env
 - **ds-install.sh**: Script for installing and configuring the Directory Server
 - **startup.sh**: Initialization script that runs when the container starts
 
-### spa-for-auth2-pkce Directory
+## OAuth2 Grant types examples
+
+### spa-for-auth2-pkce 
 
 The `spa-for-auth2-pkce/` directory contains a single-page application that demonstrates:
 
@@ -39,6 +45,25 @@ The `spa-for-auth2-pkce/` directory contains a single-page application that demo
 - Client-side authentication with Ping AM
 - Modern web application integration patterns
 
+### spa-for-oauth2-implicit 
+
+The `spa-for-oauth2-implicit/` directory contains a single-page application that demonstrates:
+
+- OAuth 2.0 Implicit Flow: A legacy grant type where tokens are delivered directly to the browser via the URL fragment.
+
+- OIDC (OpenID Connect) Integration: Requesting and decoding an id_token alongside an access_token in a single request.
+
+- Legacy Web Application Patterns: Demonstrating how "Public Clients" functioned before the standardization of PKCE for browser-based apps.
+
+### backendapp-for-oauth2-code-grant
+
+The `backendapp-for-oauth2-code-grant/` directory contains a Node.js server-side application that demonstrates:
+
+- OAuth 2.0 Authorization Code Flow: The gold standard for "Confidential Clients" where the exchange of the authorization code for tokens happens securely on the server.
+
+- Confidential Client Authentication: Uses a client_id and client_secret with the client_secret_basic authentication method (credentials sent via HTTP Authorization header).
+
+- Session Management: Implementation of express-session to maintain user state and store tokens securely on the server-side, away from the browser.
 ## Getting Started
 
 ### Prerequisites
