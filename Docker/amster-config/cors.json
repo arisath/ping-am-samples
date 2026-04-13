@@ -10,11 +10,10 @@
     "_id" : "cors",
     "maxAge" : 0,
     "exposedHeaders" : [ "*" ],
-    "acceptedHeaders" : [ "Authorization", "Content-Type", "Accept" ],
-    "allowCredentials" : false,
+    "acceptedHeaders" : [ "Authorization", "Content-Type", "Accept", "X-Requested-With", "Accept-API-Version", "iPlanetDirectoryPro", "if-match", "x-requested-platform", "ch15fefc5407912" ],    "allowCredentials" : false,
     "acceptedMethods" : [ "POST", "GET", "OPTIONS" ],
     "enabled" : true,
-    "acceptedOrigins" : [ "http://localhost:3000", "http://localhost:3000/" ],
+    "acceptedOrigins" : [ "http://localhost:3000", "http://localhost:3000/", "https://localhost:8443" ],
     "_type" : {
       "_id" : "configuration",
       "name" : "Cors Configuration",
