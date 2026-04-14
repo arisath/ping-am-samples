@@ -1,39 +1,41 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Custom UI | ForgeRock JavaScript SDK Samples</title>
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
-    <base href="/" />
-    <link rel="shortcut icon" href="/img/fr-ico.png" type="image/png" />
-    <link
-      rel="stylesheet"
-      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-    />
-  </head>
-
-  <body>
-    <div id="steps">
-      <div id="loader" class="active">Loading...</div>
-      <div id="UsernamePassword">
-        <input class="form-control" type="text" name="username" placeholder="Username" />
-        <input class="form-control" type="password" name="password" placeholder="Password" />
-        <button class="btn btn-primary">Sign In</button>
-      </div>
-      <div id="User">
-        <div>
-          <p>Your user information:</p>
-          <pre></pre>
+<body>
+<div class="login-container">
+    <div id="steps" class="login-card">
+        <div class="brand-header">
+            <img src="/img/fr-ico.png" alt="Logo" class="logo" />
+            <h4>Identity Portal</h4>
         </div>
-        <button class="btn btn-primary">Sign Out</button>
-      </div>
-      <div id="Error">
-        <p>Error code: <span></span></p>
-        <p><a id="start-over" href="/">Start over</a></p>
-      </div>
-      <div id="Fatal">
-        <p>Something unexpected happened. Check the console for details.</p>
-        <p><a id="start-over" href="/">Start over</a></p>
-      </div>
+
+        <div id="loader" class="step-content active">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Connecting to Secure Vault...</p>
+        </div>
+
+        <div id="UsernamePassword" class="step-content">
+            <h2 class="text-center mb-4">Sign In</h2>
+            <div class="form-group">
+                <label>Username</label>
+                <input class="form-control custom-input" type="text" name="username" placeholder="Enter your ID" />
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input class="form-control custom-input" type="password" name="password" placeholder="••••••••" />
+            </div>
+            <button class="btn btn-primary btn-block shadow-sm py-2 mt-3">Access System</button>
+        </div>
+
+        <div id="User" class="step-content">
+            <div class="alert alert-success">Authentication Verified</div>
+            <p class="small text-muted text-uppercase font-weight-bold">Identity Profile</p>
+            <pre class="user-data-box"></pre>
+            <button class="btn btn-outline-danger btn-block mt-3">Secure Sign Out</button>
+        </div>
+
+        <div id="Error" class="step-content">
+            <div class="alert alert-danger">Access Denied</div>
+            <p>Security Code: <span class="badge badge-danger"></span></p>
+            <a id="start-over" class="btn btn-link btn-block" href="/">Return to Gate</a>
+        </div>
     </div>
-  </body>
-</html>
+</div>
+</body>

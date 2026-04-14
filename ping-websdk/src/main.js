@@ -50,13 +50,16 @@ const handlers = {
 
 // Show only the view for this handler
 const showStep = (handler) => {
-  document.querySelectorAll('#steps > div').forEach((x) => x.classList.remove('active'));
+  // Select all div children of #steps and remove the 'active' class
+  document.querySelectorAll('#steps > .step-content').forEach((x) => x.classList.remove('active'));
+
   const panel = document.getElementById(handler);
   if (!panel) {
-    console.error(`No panel with ID "${handler}"" found`);
+    console.error(`No panel with ID "${handler}" found`);
     return false;
   }
-  document.getElementById(handler).classList.add('active');
+
+  panel.classList.add('active');
   return true;
 };
 
