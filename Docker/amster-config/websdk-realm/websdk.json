@@ -34,7 +34,7 @@
       "overrideableOIDCClaims" : [ ],
       "accessTokenMayActScript" : "[Empty]",
       "evaluateScopeScript" : "[Empty]",
-      "clientsCanSkipConsent" : false,
+      "clientsCanSkipConsent" : true,
       "accessTokenModificationScript" : "[Empty]",
       "issueRefreshTokenOnRefreshedToken" : true,
       "validateScopeScript" : "[Empty]"
@@ -52,7 +52,7 @@
       "softwareVersion" : null,
       "sectorIdentifierUri" : null,
       "tosURI" : [ ],
-      "tokenEndpointAuthMethod" : "client_secret_basic",
+      "tokenEndpointAuthMethod" : "none",
       "refreshTokenGracePeriod" : 0,
       "isConsentImplied" : false,
       "softwareIdentity" : null,
