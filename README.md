@@ -1,55 +1,56 @@
 # ping-am-samples
 
-A collection of sample applications and configurations demonstrating integration with Ping Identity Access Management AM.
-
-## Overview
-
-This repository contains various sample applications and configuration files that demonstrate how to integrate with Ping Identity Access Management products. The samples include authentication flows, container configurations, and client applications that showcase different aspects of Ping AM functionality.
+A collection of sample applications demonstrating OAuth 2.0 and OIDC integration with Ping Identity Access Manager (AM).
 
 ## Repository Structure
 
 ```
 ping-am-samples/
-├── Docker/                            # Docker configuration and containerization samples
-│   ├── Dockerfile                     # Dockerfile for building container images
-│   ├── amster-config/                 # AMster configuration files
-│   ├── ds-install.sh                  # Directory Server installation script
-│   └── startup.sh                     # Startup script for container initialization
-├── spa-for-oauth2-pkce/               # Single Page Application demonstrating OAuth 2.0 PKCE flow
-│   └── index.html                     # Main HTML file for the SPA
-├── spa-for-oauth2-implicit/           # Single Page Application demonstrating OAuth 2.0 Implicit flow
-│   └── index.html                     # Main HTML file for the SPA
-├── backendapp-for-oauth2-code-grant/  # Backend Application demonstrating OAuth 2.0 Code grant flow
-│   └── server.js                      # Backend logic
-└── README.md                          # This file
+├── Docker/                               # Containerised Ping AM environment (Tomcat + OpenDJ)
+│   ├── Dockerfile
+│   ├── startup.sh
+│   ├── ds-install.sh
+│   └── amster-config/                    # Amster automation: OAuth clients, CORS, realm config
+├── ping-websdk/                          # Embedded login SPA using ForgeRock JavaScript SDK
+├── spa-for-oauth2-pkce/                  # Public client SPA — Authorization Code + PKCE
+├── spa-for-oauth2-implicit-flow/         # Legacy SPA — Implicit flow (educational only)
+├── backendapp-for-oauth2-code-grant/     # Confidential client — Authorization Code (Node.js)
+└── android-sdk/                          # Placeholder (not yet implemented)
 ```
 
 ## Components
 
-### Docker Directory
+### Docker — Ping AM Container
 
-The `Docker/` directory contains all necessary files to containerize Ping AM environments:
+Builds a self-contained AM instance with an embedded OpenDJ directory server. Amster runs on first boot to configure the OAuth 2.0 provider, CORS policy, and pre-registered clients.
 
-- **Dockerfile**: Defines the base image and configuration for the container
-- **amster-config/**: Configuration files for AMster (Ping Identity's automation tool)
-- **ds-install.sh**: Script for installing and configuring the Directory Server
-- **startup.sh**: Initialization script that runs when the container starts
+- AM available at: `http://localhost:8080/am`
+- Default admin credentials: `admin / password` (**dev only**)
 
-## OAuth2 Grant types examples
+### ping-websdk — ForgeRock JavaScript SDK
 
-### OAuth2 Authorization Code with Proof Key for Code Exchange (PKCE)
+Webpack + TypeScript application that uses the `@forgerock/javascript-sdk` for browser-based authentication via OIDC. The dev server runs on `https://localhost:8443`.
 
-The `spa-for-auth2-pkce/` directory contains a single-page application that demonstrates:
+Configuration is loaded from a `.env` file:
 
-- OAuth 2.0 Authorization Code flow with PKCE (Proof Key for Code Exchange)
-- Client-side authentication with Ping AM
-- Modern web application integration patterns
+| Variable | Default | Description |
+|---|---|---|
+| `SERVER_URL` | `http://localhost:8080/am` | AM base URL |
+| `REALM_PATH` | `test` | AM realm |
+| `SCOPE` | `openid profile` | Requested OIDC scopes |
+| `TREE` | `sdkUsernamePasswordJourney` | Authentication journey |
+| `WEB_OAUTH_CLIENT` | `websdk` | Registered OAuth client ID |
+| `TIMEOUT` | `3000` | SDK timeout (ms) |
+
+### spa-for-oauth2-pkce — PKCE Single-Page App
+
+Vanilla JS SPA demonstrating the current best practice for public browser-based clients. No server required.
 
 ```mermaid
 sequenceDiagram
 participant User
 participant SPA as Browser (Your App)
-participant AM as ForgeRock AM
+participant AM as Ping AM
 
     note over SPA: 1. Start Flow (login())
     User->>SPA: Click "Log In"
@@ -72,9 +73,9 @@ participant AM as ForgeRock AM
     SPA->>SPA: Retrieve stored 'pkce_verifier'
     SPA->>SPA: Clean URL (replaceState)
 
-    note over SPA, AM: 5. Back-channel Secret Handshake
+    note over SPA, AM: 5. Back-channel Token Request
     SPA->>AM: Direct POST /access_token<br>Includes: grant_type=authorization_code, code, code_verifier...
-    note over AM: Validate:<br>1. Code is valid<br>2. HASH(code_verifier) == HASH sent in Step 1
+    note over AM: Validate:<br>1. Code is valid<br>2. HASH(code_verifier) == code_challenge from Step 1
 
     AM-->>SPA: Success: Return Tokens (JSON)<br>Includes: id_token, access_token
 
@@ -83,21 +84,15 @@ participant AM as ForgeRock AM
     SPA->>User: Display "Authenticated" UI
 ```
 
-### OAuth2 Implicit flow (legacy)
+### spa-for-oauth2-implicit-flow — Implicit Flow SPA (Legacy)
 
-The `spa-for-oauth2-implicit/` directory contains a single-page application that demonstrates:
-
-- OAuth 2.0 Implicit Flow: A legacy grant type where tokens are delivered directly to the browser via the URL fragment.
-
-- OIDC (OpenID Connect) Integration: Requesting and decoding an id_token alongside an access_token in a single request.
-
-- Legacy Web Application Patterns: Demonstrating how "Public Clients" functioned before the standardization of PKCE for browser-based apps.
+Demonstrates the deprecated Implicit grant type where tokens are delivered directly via the URL fragment. Included for educational and legacy-migration reference only — **do not use in new applications**.
 
 ```mermaid
 sequenceDiagram
     participant User
     participant SPA as Browser (Implicit App)
-    participant AM as ForgeRock AM
+    participant AM as Ping AM
 
     note over SPA: 1. Start Flow (login())
     User->>SPA: Click "Log In (Implicit)"
@@ -107,35 +102,29 @@ sequenceDiagram
     User->>AM: Direct Login (AM Console)
     AM-->>User: Success (Session Created)
 
-    note over AM: 3. Token Delivery (The "Front-Channel")
+    note over AM: 3. Token Delivery (Front-Channel)
     AM->>SPA: Redirect back (Callback URI)<br>Includes: #access_token=...&id_token=...
     note right of AM: Tokens are appended to the URL fragment (#)
 
     note over SPA: 4. The Extraction (handleCallback())
     SPA->>SPA: Read tokens from window.location.hash
     SPA->>SPA: Clean URL (replaceState) to hide tokens
-    
+
     note over SPA: 5. Display
     SPA->>SPA: parseJwt(id_token)
     SPA->>User: Show "Authenticated" UI & Decoded Claims
 ```
 
-### OAuth2 Authorization Code
+### backendapp-for-oauth2-code-grant — Confidential Client (Node.js)
 
-The `backendapp-for-oauth2-code-grant/` directory contains a Node.js server-side application that demonstrates:
-
-- OAuth 2.0 Authorization Code Flow: The gold standard for "Confidential Clients" where the exchange of the authorization code for tokens happens securely on the server.
-
-- Confidential Client Authentication: Uses a client_id and client_secret with the client_secret_basic authentication method (credentials sent via HTTP Authorization header).
-
-- Session Management: Implementation of express-session to maintain user state and store tokens securely on the server-side, away from the browser.
+Express.js server-side application demonstrating the Authorization Code flow for confidential clients. The token exchange happens server-to-server using HTTP Basic Auth (`client_id:client_secret`). Tokens are stored in server-side sessions and never exposed to the browser.
 
 ```mermaid
 sequenceDiagram
     participant User
     participant Browser
     participant NodeApp as Node.js Backend
-    participant AM as ForgeRock AM
+    participant AM as Ping AM
 
     note over NodeApp: 1. Initiation
     User->>Browser: Click "Log In"
@@ -154,7 +143,7 @@ sequenceDiagram
     note over NodeApp, AM: 4. The Exchange (Back-Channel)
     NodeApp->>NodeApp: Create Basic Auth Header<br/>(base64(ID:Secret))
     NodeApp->>AM: POST /access_token<br/>(code + Basic Auth)
-    note right of NodeApp: This happens server-to-server
+    note right of NodeApp: Server-to-server, secret never exposed
 
     AM-->>NodeApp: Returns JSON (access_token, id_token)
 
@@ -172,108 +161,59 @@ sequenceDiagram
 
 ### Prerequisites
 
-- Docker installed on your system
-- Basic understanding of containerization concepts
-- Familiarity with Ping Identity products and OAuth 2.0 flows
+- Docker
+- Node.js 18+ and npm (for `ping-websdk` and `backendapp-for-oauth2-code-grant`)
 
-### Building and Running
+### 1. Start Ping AM
 
-#### Docker Container
+```bash
+cd Docker
+docker build -t ping-am-sample .
+docker run -p 8080:8080 ping-am-sample
+```
 
-1. Navigate to the Docker directory:
-   ```bash
-   cd Docker
-   ```
+AM will be available at `http://localhost:8080/am` once startup completes (~2 minutes).
 
-2. Build the Docker image:
-   ```bash
-   docker build -t ping-am-sample .
-   ```
+### 2. Run the WebSDK sample
 
-3. Run the container:
-   ```bash
-   docker run -p 8080:8080 ping-am-sample
-   ```
+```bash
+cd ping-websdk
+npm install
+npm run dev
+```
 
-#### Single Page Application
+Open `https://localhost:8443` in your browser.
 
-1. Serve the SPA using a local web server:
-   ```bash
-   cd spa-for-auth2-pkce
-   # Using Python (if available)
-   python -m http.server 8000
-   # Or using Node.js
-   npx serve .
-   ```
+### 3. Run the backend Authorization Code sample
 
-2. Open your browser and navigate to the served URL (typically `http://localhost:8000`)
+```bash
+cd backendapp-for-oauth2-code-grant
+npm install
+node server.js
+```
 
-## Usage Examples
+App available at `http://localhost:3001`.
 
-### Authentication Flow
+### 4. Serve the PKCE or Implicit SPA
 
-The spa-for-auth2-pkce sample demonstrates:
-- Redirect-based authentication
-- PKCE code challenge generation
-- Token handling and storage
-- User session management
+```bash
+cd spa-for-oauth2-pkce
+npx serve .
+```
 
-### Container Configuration
+Open `http://localhost:3000` in your browser.
 
-The Docker samples show:
-- Automated Ping AM setup
-- Directory Server integration
-- Environment variable configuration
-- Startup script orchestration
+## Port Reference
 
-## Configuration
+| Component | URL |
+|---|---|
+| Ping AM | `http://localhost:8080/am` |
+| WebSDK dev server | `https://localhost:8443` |
+| Backend (code grant) | `http://localhost:3001` |
+| SPAs (via `serve`) | `http://localhost:3000` |
 
-### Environment Variables
+## Security Notes
 
-When running the Docker container, you can customize behavior using environment variables:
-
-- `PING_AM_URL`: URL of the Ping AM server
-- `CLIENT_ID`: OAuth client identifier
-- `REDIRECT_URI`: OAuth redirect URI
-- `AUTHORIZATION_ENDPOINT`: OAuth authorization endpoint
-
-### Customization
-
-To customize the samples:
-1. Modify the Dockerfile for different base images or configurations
-2. Update the amster-config files for specific Ping AM setup requirements
-3. Adjust the SPA code to match your authentication requirements
-
-## Security Considerations
-
-- The SPA sample is intended for demonstration purposes only
-- Production implementations should follow security best practices
-- Tokens should be handled securely and not exposed in client-side code
-- Consider using HTTPS in production environments
-
-## Contributing
-
-This repository is intended to provide examples and samples. Contributions are welcome, but please ensure any contributions:
-- Are well-documented
-- Follow security best practices
-- Don't expose sensitive information
-- Include appropriate licensing information
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support with Ping Identity products and services, please contact:
-- Ping Identity Support Portal
-- Ping Identity Developer Community
-- Official Ping Identity Documentation
-
-## Acknowledgments
-
-This repository provides samples and examples to help developers integrate with Ping Identity Access Management products. These examples are not official Ping Identity products but rather community-contributed samples for educational purposes.
-
-## Version History
-
-- **v1.0.0**: Initial release with Docker container samples and SPA authentication example
+- Default credentials (`admin/password`) and pre-shared secrets are for local development only.
+- The Implicit flow sample is provided for educational purposes — it is deprecated by [RFC 9700](https://datatracker.ietf.org/doc/html/rfc9700). Use PKCE for new browser-based applications.
+- In production, use HTTPS, rotate secrets, and store tokens server-side.
