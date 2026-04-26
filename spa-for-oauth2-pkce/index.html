@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AM PKCE SPA - OIDC Decoder</title>
+    <title>OAuth2 PKCE SPA</title>
     <style>
         body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 900px; margin: auto; line-height: 1.5; }
         button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
@@ -11,14 +11,40 @@
         .hidden { display: none; }
         .label { font-weight: bold; color: #555; margin-top: 1.5rem; display: block; }
         h4 { margin-bottom: 0.5rem; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+
+        /* Provider selector */
+        .provider-bar {
+            display: flex; align-items: center; gap: 1rem;
+            background: #f8f9fa; border: 1px solid #dee2e6;
+            border-radius: 8px; padding: .75rem 1rem; margin-bottom: 1.5rem;
+        }
+        .provider-bar span { font-size: .85rem; color: #555; font-weight: 600; }
+        .provider-bar label { display: flex; align-items: center; gap: .35rem; cursor: pointer; font-size: .9rem; }
+        .provider-badge { font-size: .75rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+        .badge-ping   { background: #e8f4fd; color: #1a73e8; }
+        .badge-spring { background: #e6f4ea; color: #137333; }
     </style>
 </head>
 <body>
-<h1>SPA + ForgeRock AM (PKCE)</h1>
+<h1>SPA — OAuth2 PKCE Flow</h1>
+
+<div class="provider-bar">
+    <span>IdP:</span>
+    <label>
+        <input type="radio" name="provider" value="ping" onchange="switchProvider(this.value)">
+        <span class="provider-badge badge-ping">Ping AM</span>
+        <small style="color:#888">:8080</small>
+    </label>
+    <label>
+        <input type="radio" name="provider" value="spring" onchange="switchProvider(this.value)">
+        <span class="provider-badge badge-spring">Spring Auth Server</span>
+        <small style="color:#888">:9000</small>
+    </label>
+</div>
 
 <div id="login-section">
     <p>This SPA demonstrates a secure OAuth2 PKCE flow with manual JWT decoding.</p>
-    <button onclick="login()">Log In with AM</button>
+    <button onclick="login()">Log In</button>
 </div>
 
 <div id="app-section" class="hidden">
@@ -35,31 +61,57 @@
 </div>
 
 <script>
-    // --- Configuration ---
-    const AM_URL = "http://localhost:8080/am/oauth2/realms/root";
-    const CLIENT_ID = "my-spa-client";
-    const REDIRECT_URI = "http://localhost:3000/";
-    const SCOPE = "openid profile"; // Added email to see more claims
+    // ── Provider registry ──────────────────────────────────────────────────
+    const PROVIDERS = {
+        ping: {
+            label:        "Ping AM",
+            authorizeUrl: "http://localhost:8080/am/oauth2/realms/root/authorize",
+            tokenUrl:     "http://localhost:8080/am/oauth2/realms/root/access_token",
+        },
+        spring: {
+            label:        "Spring Auth Server",
+            authorizeUrl: "http://localhost:9000/oauth2/authorize",
+            tokenUrl:     "http://localhost:9000/oauth2/token",
+        }
+    };
 
-    // --- JWT Decoder Utility ---
+    const CLIENT_ID   = "my-spa-client";
+    const REDIRECT_URI = "http://localhost:3000/";
+    const SCOPE        = "openid profile";
+
+    function getProvider() {
+        return localStorage.getItem("oauth2_provider") || "ping";
+    }
+
+    function switchProvider(value) {
+        localStorage.setItem("oauth2_provider", value);
+    }
+
+    // Restore saved selection on load
+    (function initSelector() {
+        const saved = getProvider();
+        document.querySelectorAll('input[name="provider"]').forEach(r => {
+            r.checked = (r.value === saved);
+        });
+    })();
+
+    // ── JWT Decoder ────────────────────────────────────────────────────────
     function parseJwt(token) {
         try {
-            // Get the payload (second part of the JWT)
             const base64Url = token.split('.')[1];
-            // Convert Base64Url to standard Base64
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            // Decode to JSON string and parse
-            const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-            }).join(''));
-
+            const jsonPayload = decodeURIComponent(
+                window.atob(base64).split('').map(c =>
+                    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+                ).join('')
+            );
             return JSON.parse(jsonPayload);
         } catch (e) {
             return { error: "Failed to decode ID Token" };
         }
     }
 
-    // --- PKCE Crypto Utilities ---
+    // ── PKCE Utilities ─────────────────────────────────────────────────────
     function generateRandomString(length) {
         const array = new Uint32Array(length / 2);
         window.crypto.getRandomValues(array);
@@ -68,22 +120,23 @@
 
     async function generateCodeChallenge(codeVerifier) {
         const encoder = new TextEncoder();
-        const data = encoder.encode(codeVerifier);
-        const digest = await window.crypto.subtle.digest('SHA-256', data);
-        return btoa(String.fromCharCode.apply(null, new Uint8Array(digest)))
+        const digest = await window.crypto.subtle.digest('SHA-256', encoder.encode(codeVerifier));
+        return btoa(String.fromCharCode(...new Uint8Array(digest)))
             .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
     }
 
-    // --- Core Auth Flow ---
+    // ── Auth Flow ──────────────────────────────────────────────────────────
     async function login() {
+        const provider = PROVIDERS[getProvider()];
         const state = generateRandomString(32);
         const codeVerifier = generateRandomString(64);
         sessionStorage.setItem("pkce_state", state);
         sessionStorage.setItem("pkce_verifier", codeVerifier);
+        sessionStorage.setItem("pkce_provider", getProvider());
 
         const codeChallenge = await generateCodeChallenge(codeVerifier);
 
-        const authUrl = new URL(`${AM_URL}/authorize`);
+        const authUrl = new URL(provider.authorizeUrl);
         authUrl.searchParams.append("response_type", "code");
         authUrl.searchParams.append("client_id", CLIENT_ID);
         authUrl.searchParams.append("redirect_uri", REDIRECT_URI);
@@ -102,56 +155,56 @@
 
         if (!code) return;
 
-        const savedState = sessionStorage.getItem("pkce_state");
-        const codeVerifier = sessionStorage.getItem("pkce_verifier");
+        const savedState    = sessionStorage.getItem("pkce_state");
+        const codeVerifier  = sessionStorage.getItem("pkce_verifier");
+        const savedProvider = sessionStorage.getItem("pkce_provider") || getProvider();
 
-        if (state !== savedState) {
-            alert("State mismatch!");
-            return;
-        }
+        if (state !== savedState) { alert("State mismatch!"); return; }
 
         window.history.replaceState({}, document.title, REDIRECT_URI);
 
+        // Restore provider selection from session (in case page reloaded between redirects)
+        localStorage.setItem("oauth2_provider", savedProvider);
+        document.querySelectorAll('input[name="provider"]').forEach(r => {
+            r.checked = (r.value === savedProvider);
+        });
+
+        const provider = PROVIDERS[savedProvider];
+
         try {
-            const response = await fetch(`${AM_URL}/access_token`, {
+            const response = await fetch(provider.tokenUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: new URLSearchParams({
-                    grant_type: "authorization_code",
-                    client_id: CLIENT_ID,
-                    redirect_uri: REDIRECT_URI,
-                    code: code,
+                    grant_type:    "authorization_code",
+                    client_id:     CLIENT_ID,
+                    redirect_uri:  REDIRECT_URI,
+                    code:          code,
                     code_verifier: codeVerifier
                 })
             });
 
             if (!response.ok) throw new Error(await response.text());
-
             const tokens = await response.json();
 
-            // Show UI
             document.getElementById("login-section").classList.add("hidden");
             document.getElementById("app-section").classList.remove("hidden");
 
-            // Decode the ID Token if it exists
-            if (tokens.id_token) {
-                const decoded = parseJwt(tokens.id_token);
-                document.getElementById("decoded-output").textContent = JSON.stringify(decoded, null, 2);
-            } else {
-                document.getElementById("decoded-output").textContent = "No ID Token found in response. Ensure 'openid' scope was used.";
-            }
+            document.getElementById("decoded-output").textContent = tokens.id_token
+                ? JSON.stringify(parseJwt(tokens.id_token), null, 2)
+                : "No ID Token in response — ensure 'openid' scope was requested.";
 
-            // Show raw response
             document.getElementById("token-output").textContent = JSON.stringify(tokens, null, 2);
 
         } catch (error) {
             console.error("Token exchange failed:", error);
+            alert("Token exchange failed: " + error.message);
         }
     }
 
     function logout() {
         sessionStorage.clear();
-        window.location.reload();
+        window.location.replace(REDIRECT_URI);
     }
 
     handleCallback();

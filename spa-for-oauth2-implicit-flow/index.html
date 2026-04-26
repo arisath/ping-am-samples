@@ -2,19 +2,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AM Legacy Implicit Flow</title>
+    <title>OAuth2 Implicit Flow SPA (Legacy)</title>
     <style>
         body { font-family: system-ui, sans-serif; padding: 2rem; max-width: 900px; margin: auto; line-height: 1.5; }
         button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #ed8936; color: white; border: none; border-radius: 4px; }
         pre { background: #1e1e1e; color: #d4d4d4; padding: 15px; overflow-x: auto; border-radius: 8px; font-size: 13px; }
         .hidden { display: none; }
         .warning { background: #fff5f5; border: 1px solid #feb2b2; padding: 10px; color: #c53030; border-radius: 5px; margin-bottom: 20px; }
+
+        /* Provider selector */
+        .provider-bar {
+            display: flex; align-items: center; gap: 1rem;
+            background: #f8f9fa; border: 1px solid #dee2e6;
+            border-radius: 8px; padding: .75rem 1rem; margin-bottom: 1.5rem;
+        }
+        .provider-bar span { font-size: .85rem; color: #555; font-weight: 600; }
+        .provider-bar label { display: flex; align-items: center; gap: .35rem; cursor: pointer; font-size: .9rem; }
+        .provider-badge { font-size: .75rem; padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+        .badge-ping   { background: #e8f4fd; color: #1a73e8; }
+        .badge-spring { background: #f5f5f5; color: #999; }
+        label.disabled { cursor: not-allowed; opacity: .5; }
+        .note { font-size: .8rem; color: #888; margin-left: .5rem; }
     </style>
 </head>
 <body>
-<h1>SPA + ForgeRock AM (Implicit Flow)</h1>
+<h1>SPA — OAuth2 Implicit Flow (Legacy)</h1>
+
 <div class="warning">
-    <strong>Security Note:</strong> This is a legacy flow. Tokens are exposed in the URL fragment.
+    <strong>Security Note:</strong> Implicit flow is deprecated (RFC 9700). Tokens are exposed in the URL fragment. For educational purposes only.
+</div>
+
+<div class="provider-bar">
+    <span>IdP:</span>
+    <label>
+        <input type="radio" name="provider" value="ping" checked>
+        <span class="provider-badge badge-ping">Ping AM</span>
+        <small style="color:#888">:8080</small>
+    </label>
+    <label class="disabled" title="Spring Authorization Server does not support implicit flow (by design — OAuth 2.1 removes it)">
+        <input type="radio" name="provider" value="spring" disabled>
+        <span class="provider-badge badge-spring">Spring Auth Server</span>
+        <span class="note">— not supported (OAuth 2.1)</span>
+    </label>
 </div>
 
 <div id="login-section">
@@ -35,10 +64,17 @@
 </div>
 
 <script>
-    const AM_URL = "http://localhost:8080/am/oauth2/realms/root";
-    const CLIENT_ID = "my-spa-client-implicit-flow";
-    const REDIRECT_URI = "http://localhost:3002/";
-    const SCOPE = "openid profile";
+    // Implicit flow only works with Ping AM — Spring Authorization Server intentionally
+    // dropped implicit grant support following OAuth 2.1 / RFC 9700.
+    const PROVIDERS = {
+        ping: {
+            authorizeUrl: "http://localhost:8080/am/oauth2/realms/root/authorize",
+        }
+    };
+
+    const CLIENT_ID_IMPLICIT = "my-spa-client-implicit-flow";
+    const REDIRECT_URI        = "http://localhost:3002/";
+    const SCOPE               = "openid profile";
 
     function parseJwt(token) {
         try {
@@ -49,41 +85,38 @@
     }
 
     function login() {
-        const authUrl = new URL(`${AM_URL}/authorize`);
-        // response_type "token id_token" asks for both Access and Identity tokens
+        const authUrl = new URL(PROVIDERS.ping.authorizeUrl);
         authUrl.searchParams.append("response_type", "token id_token");
-        authUrl.searchParams.append("client_id", CLIENT_ID);
+        authUrl.searchParams.append("client_id", CLIENT_ID_IMPLICIT);
         authUrl.searchParams.append("redirect_uri", REDIRECT_URI);
         authUrl.searchParams.append("scope", SCOPE);
-        authUrl.searchParams.append("nonce", "xyz123"); // Nonce is required for Implicit OIDC
-
+        authUrl.searchParams.append("nonce", "xyz123");
         window.location.href = authUrl.toString();
     }
 
     function handleCallback() {
-        // Implicit flow tokens are in the #fragment, not the ?query
         const hash = window.location.hash.substring(1);
         if (!hash) return;
 
-        const params = new URLSearchParams(hash);
+        const params      = new URLSearchParams(hash);
         const accessToken = params.get("access_token");
-        const idToken = params.get("id_token");
+        const idToken     = params.get("id_token");
 
         if (accessToken || idToken) {
-            // Clean up the URL hash immediately
             window.history.replaceState({}, document.title, REDIRECT_URI);
 
             document.getElementById("login-section").classList.add("hidden");
             document.getElementById("app-section").classList.remove("hidden");
 
             if (idToken) {
-                document.getElementById("decoded-output").textContent = JSON.stringify(parseJwt(idToken), null, 2);
+                document.getElementById("decoded-output").textContent =
+                    JSON.stringify(parseJwt(idToken), null, 2);
             }
 
-            // Show what we grabbed from the hash
             const results = {};
             params.forEach((value, key) => { results[key] = value; });
-            document.getElementById("token-output").textContent = JSON.stringify(results, null, 2);
+            document.getElementById("token-output").textContent =
+                JSON.stringify(results, null, 2);
         }
     }
 
