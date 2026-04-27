@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "realm": "/",
+    "amsterVersion": "8.1.0",
+    "entityType": "Scripts",
+    "entityId": "script-0000-0000-0000-000000000002",
+    "pathParams": {}
+  },
+  "data": {
+    "_id": "script-0000-0000-0000-000000000002",
+    "name": "PollApprovalStatus",
+    "description": "Reads the pending challenge from the user identity store and routes based on its status.",
+    "script": "dmFyIEhhc2hTZXQgPSBKYXZhLnR5cGUoImphdmEudXRpbC5IYXNoU2V0Iik7CnZhciBBVFRSX05BTUUgPSAicGVuZGluZ0FwcHJvdmFsQ2hhbGxlbmdlIjsKCnZhciB1c2VySWQgPSBzaGFyZWRTdGF0ZS5nZXQoInVzZXJuYW1lIik7CnZhciBjaGFsbGVuZ2VJZCA9IHNoYXJlZFN0YXRlLmdldCgiY2hhbGxlbmdlSWQiKTsKCnZhciBpZGVudGl0eSA9IGlkUmVwb3NpdG9yeS5nZXRJZGVudGl0eSh1c2VySWQpOwp2YXIgYXR0clZhbHVlcyA9IGlkZW50aXR5LmdldEF0dHJpYnV0ZShBVFRSX05BTUUpOwoKaWYgKGF0dHJWYWx1ZXMgPT09IG51bGwgfHwgYXR0clZhbHVlcy5pc0VtcHR5KCkpIHsKICBvdXRjb21lID0gImV4cGlyZWQiOwp9IGVsc2UgewogIHZhciByZWNvcmQgPSBKU09OLnBhcnNlKGF0dHJWYWx1ZXMuaXRlcmF0b3IoKS5uZXh0KCkpOwoKICBpZiAocmVjb3JkLmNoYWxsZW5nZUlkICE9PSBjaGFsbGVuZ2VJZCkgewogICAgb3V0Y29tZSA9ICJleHBpcmVkIjsKICB9IGVsc2UgaWYgKG5ldyBEYXRlKCkuZ2V0VGltZSgpID4gcmVjb3JkLmV4cGlyeSkgewogICAgaWRlbnRpdHkuc2V0QXR0cmlidXRlKEFUVFJfTkFNRSwgbmV3IEhhc2hTZXQoKSk7CiAgICBpZFJlcG9zaXRvcnkudXBkYXRlSWRlbnRpdHkoaWRlbnRpdHkpOwogICAgb3V0Y29tZSA9ICJleHBpcmVkIjsKICB9IGVsc2UgaWYgKHJlY29yZC5zdGF0dXMgPT09ICJBUFBST1ZFRCIpIHsKICAgIHRyYW5zaWVudFN0YXRlLnB1dCgiYXBwcm92YWxTaWduYXR1cmUiLCByZWNvcmQuc2lnbmF0dXJlKTsKICAgIGlkZW50aXR5LnNldEF0dHJpYnV0ZShBVFRSX05BTUUsIG5ldyBIYXNoU2V0KCkpOwogICAgaWRSZXBvc2l0b3J5LnVwZGF0ZUlkZW50aXR5KGlkZW50aXR5KTsKICAgIG91dGNvbWUgPSAiYXBwcm92ZWQiOwogIH0gZWxzZSBpZiAocmVjb3JkLnN0YXR1cyA9PT0gIlJFSkVDVEVEIikgewogICAgaWRlbnRpdHkuc2V0QXR0cmlidXRlKEFUVFJfTkFNRSwgbmV3IEhhc2hTZXQoKSk7CiAgICBpZFJlcG9zaXRvcnkudXBkYXRlSWRlbnRpdHkoaWRlbnRpdHkpOwogICAgb3V0Y29tZSA9ICJyZWplY3RlZCI7CiAgfSBlbHNlIHsKICAgIG91dGNvbWUgPSAicGVuZGluZyI7CiAgfQp9Cg==",
+    "default": false,
+    "language": "JAVASCRIPT",
+    "context": "SCRIPTED_DECISION_NODE",
+    "evaluatorVersion": "2.0"
+  }
+}

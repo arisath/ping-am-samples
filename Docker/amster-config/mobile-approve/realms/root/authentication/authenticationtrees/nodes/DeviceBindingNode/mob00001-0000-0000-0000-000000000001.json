@@ -1,0 +1,20 @@
+{
+  "metadata": {
+    "realm": "/",
+    "amsterVersion": "8.1.0",
+    "entityType": "DeviceBinding",
+    "entityId": "mob00001-0000-0000-0000-000000000001",
+    "pathParams": {}
+  },
+  "data": {
+    "_id": "mob00001-0000-0000-0000-000000000001",
+    "timeout": 60,
+    "authenticationType": "BIOMETRIC_ALLOW_FALLBACK",
+    "_type": {
+      "_id": "DeviceBindingNode",
+      "name": "Device Binding",
+      "collection": true,
+      "version": "1.0"
+    }
+  }
+}

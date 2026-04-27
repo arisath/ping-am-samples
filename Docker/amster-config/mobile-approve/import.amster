@@ -1,0 +1,26 @@
+/*
+ * Amster import script for mobile approval trees.
+ *
+ * Prerequisites:
+ *   1. Add custom attribute 'pendingApprovalChallenge' to your identity store schema
+ *   2. Whitelist the attribute in AM: Realm → Identity Stores → your store → User Attribute Mapping
+ *
+ * Usage (from Amster):
+ *   :load /path/to/import.amster
+ */
+
+connect http://localhost:8080/am --interactive
+
+import-config \
+    --path /path/to/pingam/realms/root/scripts \
+    --realm /
+
+import-config \
+    --path /path/to/pingam/realms/root/authentication/authenticationtrees/nodes \
+    --realm /
+
+import-config \
+    --path /path/to/pingam/realms/root/authentication/authenticationtrees/trees \
+    --realm /
+
+:exit

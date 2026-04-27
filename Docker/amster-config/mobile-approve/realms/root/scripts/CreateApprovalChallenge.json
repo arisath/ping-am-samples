@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "realm": "/",
+    "amsterVersion": "8.1.0",
+    "entityType": "Scripts",
+    "entityId": "script-0000-0000-0000-000000000001",
+    "pathParams": {}
+  },
+  "data": {
+    "_id": "script-0000-0000-0000-000000000001",
+    "name": "CreateApprovalChallenge",
+    "description": "Generates a pending approval challenge, writes it to the user identity store and displays the approval code to the web user.",
+    "script": "dmFyIFVVSUQgPSBKYXZhLnR5cGUoImphdmEudXRpbC5VVUlEIik7CnZhciBIYXNoU2V0ID0gSmF2YS50eXBlKCJqYXZhLnV0aWwuSGFzaFNldCIpOwp2YXIgVGV4dE91dHB1dENhbGxiYWNrID0gSmF2YS50eXBlKCJqYXZheC5zZWN1cml0eS5hdXRoLmNhbGxiYWNrLlRleHRPdXRwdXRDYWxsYmFjayIpOwp2YXIgQVRUUl9OQU1FID0gInBlbmRpbmdBcHByb3ZhbENoYWxsZW5nZSI7CgpmdW5jdGlvbiBnZW5lcmF0ZUNvZGUoKSB7CiAgdmFyIGNoYXJzID0gIkFCQ0RFRkdISktMTU5QUVJTVFVWV1hZWjIzNDU2Nzg5IjsKICB2YXIgcmVzdWx0ID0gIiI7CiAgZm9yICh2YXIgaSA9IDA7IGkgPCA2OyBpKyspIHsKICAgIHJlc3VsdCArPSBjaGFycy5jaGFyQXQoTWF0aC5mbG9vcihNYXRoLnJhbmRvbSgpICogY2hhcnMubGVuZ3RoKSk7CiAgfQogIHJldHVybiByZXN1bHQ7Cn0KCmlmIChjYWxsYmFja3MuaXNFbXB0eSgpKSB7CiAgdmFyIHV1aWQgPSBVVUlELnJhbmRvbVVVSUQoKS50b1N0cmluZygpOwogIHZhciBjb2RlID0gZ2VuZXJhdGVDb2RlKCk7CiAgdmFyIHVzZXJJZCA9IHNoYXJlZFN0YXRlLmdldCgidXNlcm5hbWUiKTsKCiAgdmFyIGNoYWxsZW5nZUpzb24gPSBKU09OLnN0cmluZ2lmeSh7CiAgICBjaGFsbGVuZ2VJZDogdXVpZCwKICAgIGRpc3BsYXlDb2RlOiBjb2RlLAogICAgc3RhdHVzOiAiUEVORElORyIsCiAgICBleHBpcnk6IG5ldyBEYXRlKCkuZ2V0VGltZSgpICsgMzAwMDAwLAogICAgc2lnbmF0dXJlOiBudWxsCiAgfSk7CgogIHZhciBpZGVudGl0eSA9IGlkUmVwb3NpdG9yeS5nZXRJZGVudGl0eSh1c2VySWQpOwogIHZhciB2YWx1ZXMgPSBuZXcgSGFzaFNldCgpOwogIHZhbHVlcy5hZGQoY2hhbGxlbmdlSnNvbik7CiAgaWRlbnRpdHkuc2V0QXR0cmlidXRlKEFUVFJfTkFNRSwgdmFsdWVzKTsKICBpZFJlcG9zaXRvcnkudXBkYXRlSWRlbnRpdHkoaWRlbnRpdHkpOwoKICBzaGFyZWRTdGF0ZS5wdXQoImNoYWxsZW5nZUlkIiwgdXVpZCk7CiAgc2hhcmVkU3RhdGUucHV0KCJkaXNwbGF5Q29kZSIsIGNvZGUpOwoKICBhY3Rpb24gPSBBY3Rpb24uc2VuZCgKICAgIG5ldyBUZXh0T3V0cHV0Q2FsbGJhY2soVGV4dE91dHB1dENhbGxiYWNrLklORk9STUFUSU9OLAogICAgICAiT3BlbiB5b3VyIG1vYmlsZSBhcHAgdG8gYXBwcm92ZSB0aGlzIGxvZ2luLiBBcHByb3ZhbCBjb2RlOiAiICsgY29kZSkKICApLmJ1aWxkKCk7Cn0gZWxzZSB7CiAgb3V0Y29tZSA9ICJwZW5kaW5nIjsKfQo=",
+    "default": false,
+    "language": "JAVASCRIPT",
+    "context": "SCRIPTED_DECISION_NODE",
+    "evaluatorVersion": "2.0"
+  }
+}

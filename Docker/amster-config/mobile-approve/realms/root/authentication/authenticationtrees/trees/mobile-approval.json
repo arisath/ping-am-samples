@@ -1,0 +1,58 @@
+{
+  "metadata": {
+    "realm": "/",
+    "amsterVersion": "8.1.0",
+    "entityType": "AuthTree",
+    "entityId": "mobile-approval",
+    "pathParams": {}
+  },
+  "data": {
+    "_id": "mobile-approval",
+    "innerTreeOnly": false,
+    "entryNodeId": "mob00001-0000-0000-0000-000000000001",
+    "noSession": false,
+    "mustRun": false,
+    "enabled": true,
+    "transactionalOnly": false,
+    "uiConfig": {},
+    "nodes": {
+      "mob00001-0000-0000-0000-000000000001": {
+        "nodeType": "DeviceBindingNode",
+        "displayName": "Device Binding",
+        "version": "1.0",
+        "x": 188.0,
+        "y": 270.0,
+        "connections": {
+          "success": "mob00001-0000-0000-0000-000000000002",
+          "failure": "e301438c-0bd0-429c-ab0c-66126501069a",
+          "unsupported": "e301438c-0bd0-429c-ab0c-66126501069a",
+          "abort": "e301438c-0bd0-429c-ab0c-66126501069a",
+          "clientError": "e301438c-0bd0-429c-ab0c-66126501069a"
+        }
+      },
+      "mob00001-0000-0000-0000-000000000002": {
+        "nodeType": "ScriptedDecisionNode",
+        "displayName": "Get Pending Challenges",
+        "version": "1.0",
+        "x": 388.0,
+        "y": 270.0,
+        "connections": {
+          "found": "mob00001-0000-0000-0000-000000000003",
+          "none": "e301438c-0bd0-429c-ab0c-66126501069a"
+        }
+      },
+      "mob00001-0000-0000-0000-000000000003": {
+        "nodeType": "ScriptedDecisionNode",
+        "displayName": "Submit Approval",
+        "version": "1.0",
+        "x": 588.0,
+        "y": 270.0,
+        "connections": {
+          "success": "70e691a5-1e33-4ac3-a356-e7b6d60d92e0",
+          "expired": "e301438c-0bd0-429c-ab0c-66126501069a"
+        }
+      }
+    },
+    "staticNodes": {}
+  }
+}

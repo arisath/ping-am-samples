@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "realm": "/",
+    "amsterVersion": "8.1.0",
+    "entityType": "Scripts",
+    "entityId": "script-0000-0000-0000-000000000003",
+    "pathParams": {}
+  },
+  "data": {
+    "_id": "script-0000-0000-0000-000000000003",
+    "name": "GetPendingChallenges",
+    "description": "Reads the pending approval challenge from the user identity store and surfaces challengeId and displayCode to the mobile app.",
+    "script": "dmFyIEFUVFJfTkFNRSA9ICJwZW5kaW5nQXBwcm92YWxDaGFsbGVuZ2UiOwoKdmFyIHVzZXJJZCA9IHNoYXJlZFN0YXRlLmdldCgidXNlcm5hbWUiKTsKdmFyIGlkZW50aXR5ID0gaWRSZXBvc2l0b3J5LmdldElkZW50aXR5KHVzZXJJZCk7CnZhciBhdHRyVmFsdWVzID0gaWRlbnRpdHkuZ2V0QXR0cmlidXRlKEFUVFJfTkFNRSk7CgppZiAoYXR0clZhbHVlcyA9PT0gbnVsbCB8fCBhdHRyVmFsdWVzLmlzRW1wdHkoKSkgewogIG91dGNvbWUgPSAibm9uZSI7Cn0gZWxzZSB7CiAgdmFyIHJlY29yZCA9IEpTT04ucGFyc2UoYXR0clZhbHVlcy5pdGVyYXRvcigpLm5leHQoKSk7CgogIGlmIChuZXcgRGF0ZSgpLmdldFRpbWUoKSA+IHJlY29yZC5leHBpcnkpIHsKICAgIG91dGNvbWUgPSAibm9uZSI7CiAgfSBlbHNlIHsKICAgIHNoYXJlZFN0YXRlLnB1dCgicGVuZGluZ0NoYWxsZW5nZUlkIiwgcmVjb3JkLmNoYWxsZW5nZUlkKTsKICAgIHNoYXJlZFN0YXRlLnB1dCgicGVuZGluZ0Rpc3BsYXlDb2RlIiwgcmVjb3JkLmRpc3BsYXlDb2RlKTsKICAgIG91dGNvbWUgPSAiZm91bmQiOwogIH0KfQo=",
+    "default": false,
+    "language": "JAVASCRIPT",
+    "context": "SCRIPTED_DECISION_NODE",
+    "evaluatorVersion": "2.0"
+  }
+}
