@@ -17,8 +17,8 @@
     "uiConfig": {},
     "nodes": {
       "mob00001-0000-0000-0000-000000000001": {
-        "nodeType": "DeviceBindingNode",
-        "displayName": "Device Binding",
+        "nodeType": "DeviceSigningVerifyNode",
+        "displayName": "Device Signing Verify",
         "version": "1.0",
         "x": 188.0,
         "y": 270.0,
@@ -26,7 +26,6 @@
           "success": "mob00001-0000-0000-0000-000000000002",
           "failure": "e301438c-0bd0-429c-ab0c-66126501069a",
           "unsupported": "e301438c-0bd0-429c-ab0c-66126501069a",
-          "abort": "e301438c-0bd0-429c-ab0c-66126501069a",
           "clientError": "e301438c-0bd0-429c-ab0c-66126501069a"
         }
       },

@@ -1,0 +1,37 @@
+{
+  "metadata": {
+    "realm": "/",
+    "amsterVersion": "8.1.0",
+    "entityType": "DeviceSigningVerifier",
+    "entityId": "mob00001-0000-0000-0000-000000000001",
+    "pathParams": {}
+  },
+  "data": {
+    "_id": "mob00001-0000-0000-0000-000000000001",
+    "captureFailure": false,
+    "subtitle": {},
+    "applicationIds": ["id"],
+    "description": {},
+    "skewAllowance": 60,
+    "clientErrorOutcomes": ["Unsupported", "Abort", "Timeout", "ClientNotRegistered"],
+    "challenge": true,
+    "title": {},
+    "timeout": 60,
+    "_type": {
+      "_id": "DeviceSigningVerifyNode",
+      "name": "Device Signing Verifier",
+      "collection": true,
+      "version": "1.0"
+    },
+    "_outcomes": [
+      { "id": "success", "displayName": "Success" },
+      { "id": "failure", "displayName": "Failure" },
+      { "id": "noDeviceRegistered", "displayName": "No Registered Device" },
+      { "id": "keyNotFound", "displayName": "Key not found" },
+      { "id": "Unsupported", "displayName": "Unsupported" },
+      { "id": "Abort", "displayName": "Abort" },
+      { "id": "Timeout", "displayName": "Timeout" },
+      { "id": "ClientNotRegistered", "displayName": "ClientNotRegistered" }
+    ]
+  }
+}
