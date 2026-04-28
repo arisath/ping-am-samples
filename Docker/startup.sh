@@ -46,7 +46,7 @@ install-openam  --acceptLicense \
  --userStorePort 1389 \
  --userStoreSsl SIMPLE \
  --userStoreDirMgr uid=admin \
- --userStoreRootSuffix "dc=example,dc=com"
+ --userStoreRootSuffix "ou=identities"
 exit
 EOF
 
