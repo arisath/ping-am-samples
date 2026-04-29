@@ -111,5 +111,48 @@ class FRSessionActivity: AppCompatActivity(), NodeListener<FRSession>, ActivityL
         updateStatus(true)
     }
 
+    override fun deviceBind() {
+        FRSession.authenticate(this, getString(R.string.forgerock_device_bind_service), object : NodeListener<FRSession> {
+            override fun onSuccess(result: FRSession) {
+                runOnUiThread { showDialog("Device Binding", "Device bound successfully") }
+            }
+            override fun onException(e: Exception) {
+                Logger.error(classNameTag, e.message, e)
+                runOnUiThread { showDialog("Device Binding Failed", e.message ?: "Unknown error") }
+            }
+            override fun onCallbackReceived(node: Node) {
+                nodeDialog?.dismiss()
+                nodeDialog = NodeDialogFragment.newInstance(node)
+                runOnUiThread { nodeDialog?.show(supportFragmentManager, NodeDialogFragment::class.java.name) }
+            }
+        })
+    }
+
+    override fun transactionSign() {
+        FRSession.authenticate(this, getString(R.string.forgerock_transaction_sign_service), object : NodeListener<FRSession> {
+            override fun onSuccess(result: FRSession) {
+                runOnUiThread { showDialog("Transaction Signing", "Transaction signed successfully") }
+            }
+            override fun onException(e: Exception) {
+                Logger.error(classNameTag, e.message, e)
+                runOnUiThread { showDialog("Transaction Signing Failed", e.message ?: "Unknown error") }
+            }
+            override fun onCallbackReceived(node: Node) {
+                nodeDialog?.dismiss()
+                nodeDialog = NodeDialogFragment.newInstance(node)
+                runOnUiThread { nodeDialog?.show(supportFragmentManager, NodeDialogFragment::class.java.name) }
+            }
+        })
+    }
+
+    private fun showDialog(title: String, message: String) {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(message)
+            .setCancelable(false)
+            .setPositiveButton("OK", null)
+            .create()
+            .show()
+    }
 
 }

@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat
 import net.openid.appauth.AuthorizationRequest
 import org.forgerock.android.auth.AccessToken
 import org.forgerock.android.auth.FRListener
+import org.forgerock.android.auth.FRSession
 import org.forgerock.android.auth.FRUser
 import org.forgerock.android.auth.Logger
 import org.forgerock.android.auth.Node
@@ -37,6 +38,8 @@ import org.forgerock.android.auth.exception.AuthenticationRequiredException
 
 interface ActivityListener {
     fun logout()
+    fun deviceBind()
+    fun transactionSign()
 }
 
 class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener {
@@ -44,6 +47,8 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
     private val status: TextView by lazy { findViewById(R.id.status) }
     private val loginButton: Button by lazy { findViewById(R.id.login) }
     private val logoutButton: Button by lazy { findViewById(R.id.logout) }
+    private val deviceBindButton: Button by lazy { findViewById(R.id.deviceBind) }
+    private val transactionSignButton: Button by lazy { findViewById(R.id.transactionSign) }
     private val classNameTag = MainActivity::class.java.name
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,9 +62,9 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                 centralizedLogin()
             }
         }
-        logoutButton.setOnClickListener {
-            logout()
-        }
+        logoutButton.setOnClickListener { logout() }
+        deviceBindButton.setOnClickListener { deviceBind() }
+        transactionSignButton.setOnClickListener { transactionSign() }
     }
 
     override fun onStart() {
@@ -110,13 +115,13 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
 
     private fun updateStatus(showLogin: Boolean = false) {
         runOnUiThread {
-            (if (showLogin) View.VISIBLE else View.GONE).also {
-                loginButton.visibility = it
-                logoutButton.visibility = it
-                status.visibility = it
-            }
-            loginButton.apply { this.isEnabled = showLogin == true }
-            logoutButton.apply { this.isEnabled = showLogin == false }
+            loginButton.visibility = if (showLogin) View.VISIBLE else View.GONE
+            loginButton.isEnabled = showLogin
+            logoutButton.visibility = if (!showLogin) View.VISIBLE else View.GONE
+            logoutButton.isEnabled = !showLogin
+            deviceBindButton.visibility = View.VISIBLE
+            transactionSignButton.visibility = View.VISIBLE
+            status.visibility = View.VISIBLE
             status.text = if (showLogin) "User is not authenticated" else "User is authenticated"
         }
     }
@@ -142,8 +147,8 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
 
     private fun launchUserInfoFragment(token: AccessToken, result: FRUser?) {
         val userInfoFragment = UserInfoFragment.newInstance(result?.accessToken?.value,
-            token.refreshToken!!,
-            token.idToken!!,
+            token.refreshToken ?: "N/A",
+            token.idToken ?: "N/A",
             this@MainActivity)
         userInfoFragment.let {
             supportFragmentManager.beginTransaction().add(R.id.container, it, UserInfoFragment.TAG).commit()
@@ -291,6 +296,76 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
             }
 
         }
+    }
+
+    override fun deviceBind() {
+        FRSession.authenticate(applicationContext, getString(R.string.forgerock_device_bind_service), object : NodeListener<FRSession> {
+            override fun onSuccess(result: FRSession) {
+                runOnUiThread { showDialog("Device Binding", "Device bound successfully") }
+            }
+            override fun onException(e: Exception) {
+                Logger.error(classNameTag, e.message, e)
+                runOnUiThread { showDialog("Device Binding Failed", e.message ?: "Unknown error") }
+            }
+            override fun onCallbackReceived(node: Node) {
+                handleSessionNode(node)
+            }
+        })
+    }
+
+    override fun transactionSign() {
+        FRSession.authenticate(applicationContext, getString(R.string.forgerock_transaction_sign_service), object : NodeListener<FRSession> {
+            override fun onSuccess(result: FRSession) {
+                runOnUiThread { showDialog("Transaction Signing", "Transaction signed successfully") }
+            }
+            override fun onException(e: Exception) {
+                Logger.error(classNameTag, e.message, e)
+                runOnUiThread { showDialog("Transaction Signing Failed", e.message ?: "Unknown error") }
+            }
+            override fun onCallbackReceived(node: Node) {
+                handleSessionNode(node)
+            }
+        })
+    }
+
+    private fun handleSessionNode(node: Node) {
+        val activity = this
+        node.callbacks.forEach { callback ->
+            when (callback.type) {
+                "DeviceBindingCallback" -> {
+                    runOnUiThread {
+                        node.getCallback(DeviceBindingCallback::class.java).bind(activity, listener = object : FRListener<Void?> {
+                            override fun onSuccess(result: Void?) { node.next(activity, null) }
+                            override fun onException(e: Exception) { node.next(activity, null) }
+                        })
+                    }
+                }
+                "DeviceSigningVerifierCallback" -> {
+                    runOnUiThread {
+                        node.getCallback(DeviceSigningVerifierCallback::class.java).sign(activity, listener = object : FRListener<Void?> {
+                            override fun onSuccess(result: Void?) { node.next(activity, null) }
+                            override fun onException(e: Exception) { node.next(activity, null) }
+                        })
+                    }
+                }
+                else -> {
+                    var nodeDialog = supportFragmentManager.findFragmentByTag(NodeDialogFragment.TAG) as? NodeDialogFragment
+                    nodeDialog?.dismiss()
+                    nodeDialog = NodeDialogFragment.newInstance(node)
+                    runOnUiThread { nodeDialog.show(supportFragmentManager, NodeDialogFragment.TAG) }
+                }
+            }
+        }
+    }
+
+    private fun showDialog(title: String, message: String) {
+        AlertDialog.Builder(this)
+            .setTitle(title)
+            .setMessage(message)
+            .setCancelable(false)
+            .setPositiveButton("OK", null)
+            .create()
+            .show()
     }
 
     override fun logout() {

@@ -66,10 +66,13 @@ class UserInfoFragment : Fragment() {
         idToken.movementMethod = ScrollingMovementMethod()
         idToken.text = param3
         val logout: Button = view.findViewById(R.id.logout)
-        logout.setOnClickListener {
-            listener?.logout()
+        logout.setOnClickListener { listener?.logout() }
 
-        }
+        val deviceBind: Button = view.findViewById(R.id.deviceBind)
+        deviceBind.setOnClickListener { listener?.deviceBind() }
+
+        val transactionSign: Button = view.findViewById(R.id.transactionSign)
+        transactionSign.setOnClickListener { listener?.transactionSign() }
     }
 
     companion object {
