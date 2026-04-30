@@ -69,3 +69,7 @@ printf 'dn: ou=groups,dc=example,dc=com\nchangetype: add\nobjectClass: top\nobje
 /usr/local/opendj/bin/ldapmodify --hostname localhost --port 1389 \
   --bindDN "uid=admin" --bindPassword password \
   --filename /tmp/groups.ldif
+
+
+/usr/local/opendj/bin/dsconfig get-password-policy-prop --policy-name "Default Password Policy" --property password-validator --hostname localhost --port 4444 --bindDN "uid=admin" --bindPassword password --no-prompt --trustAll                                                                                                                                                          
+                                
