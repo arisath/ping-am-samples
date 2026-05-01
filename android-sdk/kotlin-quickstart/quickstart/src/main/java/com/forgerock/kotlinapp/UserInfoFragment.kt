@@ -6,7 +6,6 @@
  */
 package com.forgerock.kotlinapp
 
-import android.graphics.Color
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
@@ -55,7 +54,6 @@ class UserInfoFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view.setBackgroundColor(Color.GRAY)
         val accessToken: TextView = view.findViewById(R.id.accessToken)
         accessToken.movementMethod = ScrollingMovementMethod()
         accessToken.text = param1
