@@ -1,0 +1,28 @@
+{
+    "metadata": {
+        "realm": "/android",
+        "amsterVersion": "8.1.0",
+        "entityType": "DataStoreDecision",
+        "entityId": "f2c44daf-4237-41eb-a898-7d762aa1b5cd",
+        "pathParams": {}
+    },
+    "data": {
+        "_id": "f2c44daf-4237-41eb-a898-7d762aa1b5cd",
+        "_type": {
+            "_id": "DataStoreDecisionNode",
+            "name": "Data Store Decision",
+            "collection": true,
+            "version": "1.0"
+        },
+        "_outcomes": [
+            {
+                "id": "true",
+                "displayName": "True"
+            },
+            {
+                "id": "false",
+                "displayName": "False"
+            }
+        ]
+    }
+}
