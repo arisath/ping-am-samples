@@ -112,7 +112,7 @@ class FRSessionActivity: AppCompatActivity(), NodeListener<FRSession>, ActivityL
     }
 
     override fun deviceBind() {
-        FRSession.authenticate(this, getString(R.string.forgerock_device_bind_service), object : NodeListener<FRSession> {
+        val listener = object : NodeListener<FRSession> {
             override fun onSuccess(result: FRSession) {
                 runOnUiThread { showDialog("Device Binding", "Device bound successfully") }
             }
@@ -122,14 +122,15 @@ class FRSessionActivity: AppCompatActivity(), NodeListener<FRSession>, ActivityL
             }
             override fun onCallbackReceived(node: Node) {
                 nodeDialog?.dismiss()
-                nodeDialog = NodeDialogFragment.newInstance(node)
+                nodeDialog = NodeDialogFragment.newInstance(node).also { it.nodeListener = this }
                 runOnUiThread { nodeDialog?.show(supportFragmentManager, NodeDialogFragment::class.java.name) }
             }
-        })
+        }
+        FRSession.authenticate(this, getString(R.string.forgerock_device_bind_service), listener)
     }
 
     override fun transactionSign() {
-        FRSession.authenticate(this, getString(R.string.forgerock_transaction_sign_service), object : NodeListener<FRSession> {
+        val listener = object : NodeListener<FRSession> {
             override fun onSuccess(result: FRSession) {
                 runOnUiThread { showDialog("Transaction Signing", "Transaction signed successfully") }
             }
@@ -139,10 +140,11 @@ class FRSessionActivity: AppCompatActivity(), NodeListener<FRSession>, ActivityL
             }
             override fun onCallbackReceived(node: Node) {
                 nodeDialog?.dismiss()
-                nodeDialog = NodeDialogFragment.newInstance(node)
+                nodeDialog = NodeDialogFragment.newInstance(node).also { it.nodeListener = this }
                 runOnUiThread { nodeDialog?.show(supportFragmentManager, NodeDialogFragment::class.java.name) }
             }
-        })
+        }
+        FRSession.authenticate(this, getString(R.string.forgerock_transaction_sign_service), listener)
     }
 
     private fun showDialog(title: String, message: String) {

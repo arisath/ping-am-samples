@@ -27,6 +27,7 @@ import org.forgerock.android.auth.callback.PasswordCallback
 
 class NodeDialogFragment: DialogFragment() {
     private var node: Node? = null
+    var nodeListener: org.forgerock.android.auth.NodeListener<*>? = null
     companion object {
         fun newInstance(node: Node?): NodeDialogFragment {
             return NodeDialogFragment().apply {
@@ -99,15 +100,15 @@ class NodeDialogFragment: DialogFragment() {
             node?.getCallback(NameCallback::class.java)?.setName(username.text.toString())
             node?.getCallback(PasswordCallback::class.java)?.setPassword(password.text.toString().toCharArray())
 
-            val frSessionActivity: FRSessionActivity? = activity as? FRSessionActivity
-            val activity: MainActivity? = activity as? MainActivity
-
-            activity?.let {
-                node?.next(context, it)
-            }
-
-            frSessionActivity?.let {
-                node?.next(context, it)
+            val customListener = nodeListener
+            if (customListener != null) {
+                @Suppress("UNCHECKED_CAST")
+                node?.next(context, customListener as org.forgerock.android.auth.NodeListener<Any?>)
+            } else {
+                val frSessionActivity: FRSessionActivity? = activity as? FRSessionActivity
+                val mainActivity: MainActivity? = activity as? MainActivity
+                mainActivity?.let { node?.next(context, it) }
+                frSessionActivity?.let { node?.next(context, it) }
             }
 
             dismiss()

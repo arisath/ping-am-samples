@@ -299,7 +299,7 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
     }
 
     override fun deviceBind() {
-        FRSession.authenticate(applicationContext, getString(R.string.forgerock_device_bind_service), object : NodeListener<FRSession> {
+        val listener = object : NodeListener<FRSession> {
             override fun onSuccess(result: FRSession) {
                 runOnUiThread { showDialog("Device Binding", "Device bound successfully") }
             }
@@ -308,13 +308,14 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                 runOnUiThread { showDialog("Device Binding Failed", e.message ?: "Unknown error") }
             }
             override fun onCallbackReceived(node: Node) {
-                handleSessionNode(node)
+                handleSessionNode(node, this)
             }
-        })
+        }
+        FRSession.authenticate(applicationContext, getString(R.string.forgerock_device_bind_service), listener)
     }
 
     override fun transactionSign() {
-        FRSession.authenticate(applicationContext, getString(R.string.forgerock_transaction_sign_service), object : NodeListener<FRSession> {
+        val listener = object : NodeListener<FRSession> {
             override fun onSuccess(result: FRSession) {
                 runOnUiThread { showDialog("Transaction Signing", "Transaction signed successfully") }
             }
@@ -323,35 +324,36 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                 runOnUiThread { showDialog("Transaction Signing Failed", e.message ?: "Unknown error") }
             }
             override fun onCallbackReceived(node: Node) {
-                handleSessionNode(node)
+                handleSessionNode(node, this)
             }
-        })
+        }
+        FRSession.authenticate(applicationContext, getString(R.string.forgerock_transaction_sign_service), listener)
     }
 
-    private fun handleSessionNode(node: Node) {
+    private fun handleSessionNode(node: Node, listener: NodeListener<FRSession>) {
         val activity = this
         node.callbacks.forEach { callback ->
             when (callback.type) {
                 "DeviceBindingCallback" -> {
                     runOnUiThread {
                         node.getCallback(DeviceBindingCallback::class.java).bind(activity, listener = object : FRListener<Void?> {
-                            override fun onSuccess(result: Void?) { node.next(activity, null) }
-                            override fun onException(e: Exception) { node.next(activity, null) }
+                            override fun onSuccess(result: Void?) { node.next(activity, listener) }
+                            override fun onException(e: Exception) { node.next(activity, listener) }
                         })
                     }
                 }
                 "DeviceSigningVerifierCallback" -> {
                     runOnUiThread {
                         node.getCallback(DeviceSigningVerifierCallback::class.java).sign(activity, listener = object : FRListener<Void?> {
-                            override fun onSuccess(result: Void?) { node.next(activity, null) }
-                            override fun onException(e: Exception) { node.next(activity, null) }
+                            override fun onSuccess(result: Void?) { node.next(activity, listener) }
+                            override fun onException(e: Exception) { node.next(activity, listener) }
                         })
                     }
                 }
                 else -> {
                     var nodeDialog = supportFragmentManager.findFragmentByTag(NodeDialogFragment.TAG) as? NodeDialogFragment
                     nodeDialog?.dismiss()
-                    nodeDialog = NodeDialogFragment.newInstance(node)
+                    nodeDialog = NodeDialogFragment.newInstance(node).also { it.nodeListener = listener }
                     runOnUiThread { nodeDialog.show(supportFragmentManager, NodeDialogFragment.TAG) }
                 }
             }
