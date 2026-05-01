@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import org.forgerock.android.auth.Logger
 
 
 // TODO: Rename parameter arguments, choose names that match
@@ -21,6 +22,7 @@ import androidx.fragment.app.Fragment
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 private const val ARG_PARAM3 = "param3"
+private const val ARG_IS_BOUND = "is_bound"
 
 /**
  * A simple [Fragment] subclass.
@@ -32,6 +34,7 @@ class UserInfoFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
     private var param3: String? = null
+    private var isBound: Boolean = false
     private var listener: ActivityListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +43,7 @@ class UserInfoFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
             param3 = it.getString(ARG_PARAM3)
-
+            isBound = it.getBoolean(ARG_IS_BOUND, false)
         }
     }
 
@@ -54,6 +57,8 @@ class UserInfoFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Logger.debug(TAG, "onViewCreated: isBound=$isBound — setting up buttons accordingly")
+
         val accessToken: TextView = view.findViewById(R.id.accessToken)
         accessToken.movementMethod = ScrollingMovementMethod()
         accessToken.text = param1
@@ -63,13 +68,18 @@ class UserInfoFragment : Fragment() {
         val idToken: TextView = view.findViewById(R.id.idToken)
         idToken.movementMethod = ScrollingMovementMethod()
         idToken.text = param3
+
         val logout: Button = view.findViewById(R.id.logout)
         logout.setOnClickListener { listener?.logout() }
 
         val deviceBind: Button = view.findViewById(R.id.deviceBind)
+        deviceBind.visibility = if (!isBound) View.VISIBLE else View.GONE
+        Logger.debug(TAG, "onViewCreated: deviceBind button visible=${!isBound} (device not yet bound)")
         deviceBind.setOnClickListener { listener?.deviceBind() }
 
         val transactionSign: Button = view.findViewById(R.id.transactionSign)
+        transactionSign.visibility = if (isBound) View.VISIBLE else View.GONE
+        Logger.debug(TAG, "onViewCreated: transactionSign button visible=$isBound (device is bound)")
         transactionSign.setOnClickListener { listener?.transactionSign() }
     }
 
@@ -84,13 +94,14 @@ class UserInfoFragment : Fragment() {
          */
         // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(param1: String?, param2: String?,param3: String?, listener: ActivityListener?) =
+        fun newInstance(param1: String?, param2: String?, param3: String?, listener: ActivityListener?, isBound: Boolean = false) =
             UserInfoFragment().apply {
                 this.listener = listener
                 arguments = Bundle().apply {
                     putString(ARG_PARAM1, param1)
                     putString(ARG_PARAM2, param2)
                     putString(ARG_PARAM3, param3)
+                    putBoolean(ARG_IS_BOUND, isBound)
                 }
             }
         const val TAG: String = "UserInfoFragment"

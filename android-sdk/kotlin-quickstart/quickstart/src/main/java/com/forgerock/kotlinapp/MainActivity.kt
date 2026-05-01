@@ -49,7 +49,27 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
     private val logoutButton: Button by lazy { findViewById(R.id.logout) }
     private val deviceBindButton: Button by lazy { findViewById(R.id.deviceBind) }
     private val transactionSignButton: Button by lazy { findViewById(R.id.transactionSign) }
+    private val resetBindingButton: Button by lazy { findViewById(R.id.resetBinding) }
     private val classNameTag = MainActivity::class.java.name
+    private val prefs by lazy { getSharedPreferences("device_binding_prefs", MODE_PRIVATE) }
+
+    private fun isDeviceBound(): Boolean {
+        val bound = prefs.getBoolean("is_bound", false)
+        Logger.debug(classNameTag, "isDeviceBound() -> $bound (SharedPrefs key='is_bound')")
+        return bound
+    }
+
+    private fun markDeviceBound() {
+        Logger.debug(classNameTag, "markDeviceBound() called — persisting is_bound=true")
+        prefs.edit().putBoolean("is_bound", true).apply()
+        Logger.debug(classNameTag, "markDeviceBound() complete")
+    }
+
+    private fun clearDeviceBound() {
+        Logger.debug(classNameTag, "clearDeviceBound() called — removing is_bound from SharedPrefs (test reset)")
+        prefs.edit().remove("is_bound").apply()
+        Logger.debug(classNameTag, "clearDeviceBound() complete — isDeviceBound() now=${isDeviceBound()}")
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +85,12 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
         logoutButton.setOnClickListener { logout() }
         deviceBindButton.setOnClickListener { deviceBind() }
         transactionSignButton.setOnClickListener { transactionSign() }
+        resetBindingButton.setOnClickListener {
+            Logger.debug(classNameTag, "resetBindingButton clicked — triggering test reset of device binding")
+            clearDeviceBound()
+            updateStatus(true)
+            showDialog("Dev Reset", "Device binding cleared. You can bind again.")
+        }
     }
 
     override fun onStart() {
@@ -115,15 +141,31 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
 
     private fun updateStatus(showLogin: Boolean = false) {
         runOnUiThread {
-            loginButton.visibility = if (showLogin) View.VISIBLE else View.GONE
-            loginButton.isEnabled = showLogin
-            logoutButton.visibility = if (!showLogin) View.VISIBLE else View.GONE
-            logoutButton.isEnabled = !showLogin
-            deviceBindButton.visibility = View.VISIBLE
-            transactionSignButton.visibility = View.VISIBLE
+            Logger.debug(classNameTag, "updateStatus(showLogin=$showLogin) — checking device binding state")
+            val bound = isDeviceBound()
+            Logger.debug(classNameTag, "updateStatus: bound=$bound -> loginVisible=${showLogin && bound}, logoutVisible=${!showLogin && bound}")
+            loginButton.visibility = if (showLogin && bound) View.VISIBLE else View.GONE
+            loginButton.isEnabled = showLogin && bound
+            logoutButton.visibility = if (!showLogin && bound) View.VISIBLE else View.GONE
+            logoutButton.isEnabled = !showLogin && bound
             status.visibility = View.VISIBLE
-            status.text = if (showLogin) "User is not authenticated" else "User is authenticated"
+            status.text = when {
+                !bound -> "Bind this device to get started"
+                showLogin -> "Sign in to access your account"
+                else -> "User is authenticated"
+            }
+            Logger.debug(classNameTag, "updateStatus: statusText='${status.text}'")
+            updateSecurityButtons()
         }
+    }
+
+    private fun updateSecurityButtons() {
+        Logger.debug(classNameTag, "updateSecurityButtons() — checking device binding state")
+        val bound = isDeviceBound()
+        Logger.debug(classNameTag, "updateSecurityButtons: bound=$bound -> deviceBindVisible=${!bound}, transactionSignVisible=$bound, resetBindingVisible=$bound")
+        deviceBindButton.visibility = if (!bound) View.VISIBLE else View.GONE
+        transactionSignButton.visibility = if (bound) View.VISIBLE else View.GONE
+        resetBindingButton.visibility = if (bound) View.VISIBLE else View.GONE
     }
 
 
@@ -146,10 +188,14 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
 
 
     private fun launchUserInfoFragment(token: AccessToken, result: FRUser?) {
+        Logger.debug(classNameTag, "launchUserInfoFragment() — checking device binding state for fragment")
+        val boundForFragment = isDeviceBound()
+        Logger.debug(classNameTag, "launchUserInfoFragment: passing isBound=$boundForFragment to UserInfoFragment")
         val userInfoFragment = UserInfoFragment.newInstance(result?.accessToken?.value,
             token.refreshToken ?: "N/A",
             token.idToken ?: "N/A",
-            this@MainActivity)
+            this@MainActivity,
+            boundForFragment)
         userInfoFragment.let {
             supportFragmentManager.beginTransaction().add(R.id.container, it, UserInfoFragment.TAG).commit()
         }
@@ -301,7 +347,13 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
     override fun deviceBind() {
         val listener = object : NodeListener<FRSession> {
             override fun onSuccess(result: FRSession) {
-                runOnUiThread { showDialog("Device Binding", "Device bound successfully") }
+                Logger.debug(classNameTag, "deviceBind() onSuccess — device binding flow completed, marking device as bound")
+                markDeviceBound()
+                Logger.debug(classNameTag, "deviceBind() onSuccess — isDeviceBound() now=${isDeviceBound()}")
+                runOnUiThread {
+                    updateSecurityButtons()
+                    showDialog("Device Binding", "Device bound successfully")
+                }
             }
             override fun onException(e: Exception) {
                 Logger.error(classNameTag, e.message, e)
