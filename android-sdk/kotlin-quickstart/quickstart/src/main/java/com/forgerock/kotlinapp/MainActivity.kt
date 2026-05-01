@@ -382,12 +382,17 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
         FRSession.authenticate(applicationContext, getString(R.string.forgerock_transaction_sign_service), listener)
     }
 
+    private fun dismissNodeDialog() {
+        (supportFragmentManager.findFragmentByTag(NodeDialogFragment.TAG) as? NodeDialogFragment)?.dismiss()
+    }
+
     private fun handleSessionNode(node: Node, listener: NodeListener<FRSession>) {
         val activity = this
         node.callbacks.forEach { callback ->
             when (callback.type) {
                 "DeviceBindingCallback" -> {
                     runOnUiThread {
+                        dismissNodeDialog()
                         node.getCallback(DeviceBindingCallback::class.java).bind(activity, listener = object : FRListener<Void?> {
                             override fun onSuccess(result: Void?) { node.next(activity, listener) }
                             override fun onException(e: Exception) { node.next(activity, listener) }
@@ -396,6 +401,7 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                 }
                 "DeviceSigningVerifierCallback" -> {
                     runOnUiThread {
+                        dismissNodeDialog()
                         node.getCallback(DeviceSigningVerifierCallback::class.java).sign(activity, listener = object : FRListener<Void?> {
                             override fun onSuccess(result: Void?) { node.next(activity, listener) }
                             override fun onException(e: Exception) { node.next(activity, listener) }
