@@ -16,18 +16,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Logo circle -->
-    <TextView
+    <!-- Logo -->
+    <ImageView
         android:id="@+id/logo_view"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:layout_marginTop="56dp"
-        android:background="@drawable/bg_logo_circle"
-        android:gravity="center"
-        android:text="NP"
-        android:textColor="@color/bank_navy"
-        android:textSize="26sp"
-        android:textStyle="bold"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginTop="52dp"
+        android:src="@drawable/ic_logo"
+        android:scaleType="fitCenter"
+        android:background="@android:color/transparent"
+        android:contentDescription="App logo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
