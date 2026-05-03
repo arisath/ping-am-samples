@@ -6,6 +6,7 @@
  */
 package com.forgerock.kotlinapp
 
+import android.content.Context
 import androidx.fragment.app.FragmentActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -18,6 +19,10 @@ import org.forgerock.android.auth.devicebind.DeviceAuthenticator
 import org.forgerock.android.auth.devicebind.None
 import org.forgerock.android.auth.devicebind.PinCollector
 import org.forgerock.android.auth.devicebind.Prompt
+import org.forgerock.android.auth.devicebind.UserKey
+import java.security.PrivateKey
+import java.security.Signature
+import java.util.Date
 
 class BrandedPinCollector : PinCollector {
 
@@ -36,9 +41,35 @@ class BrandedPinCollector : PinCollector {
         }
 }
 
-fun brandedDeviceAuthenticator(): (DeviceBindingAuthenticationType) -> DeviceAuthenticator = { type ->
+/**
+ * Subclasses ApplicationPinDeviceAuthenticator to intercept the signed JWS
+ * so the app can capture it before it is sent to AM.
+ */
+class CapturingPinAuthenticator(
+    pinCollector: PinCollector,
+    private val onJwsSigned: (String) -> Unit
+) : ApplicationPinDeviceAuthenticator(pinCollector) {
+
+    override fun sign(
+        context: Context,
+        userKey: UserKey,
+        privateKey: PrivateKey,
+        signature: Signature?,
+        challenge: String,
+        expiration: Date,
+        customClaims: Map<String, Any>
+    ): String {
+        val jws = super.sign(context, userKey, privateKey, signature, challenge, expiration, customClaims)
+        onJwsSigned(jws)
+        return jws
+    }
+}
+
+fun brandedDeviceAuthenticator(onJwsSigned: ((String) -> Unit)? = null): (DeviceBindingAuthenticationType) -> DeviceAuthenticator = { type ->
     when (type) {
-        DeviceBindingAuthenticationType.APPLICATION_PIN -> ApplicationPinDeviceAuthenticator(BrandedPinCollector())
+        DeviceBindingAuthenticationType.APPLICATION_PIN ->
+            if (onJwsSigned != null) CapturingPinAuthenticator(BrandedPinCollector(), onJwsSigned)
+            else ApplicationPinDeviceAuthenticator(BrandedPinCollector())
         DeviceBindingAuthenticationType.BIOMETRIC_ONLY -> BiometricOnly()
         DeviceBindingAuthenticationType.BIOMETRIC_ALLOW_FALLBACK -> BiometricAndDeviceCredential()
         else -> None()

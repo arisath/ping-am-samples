@@ -53,6 +53,8 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
     private val classNameTag = MainActivity::class.java.name
     private val prefs by lazy { getSharedPreferences("device_binding_prefs", MODE_PRIVATE) }
     private var pendingPaymentClaims: Map<String, Any> = emptyMap()
+    var lastSignedJwt: String? = null
+        private set
 
     private fun isDeviceBound(): Boolean {
         val bound = prefs.getBoolean("is_bound", false)
@@ -390,12 +392,18 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
     private fun startTransactionSignFlow() {
         val listener = object : NodeListener<FRSession> {
             override fun onSuccess(result: FRSession) {
+                val jwt = lastSignedJwt
                 pendingPaymentClaims = emptyMap()
-                runOnUiThread { showDialog("Transaction Signing", "Transaction signed successfully") }
+                Logger.debug(classNameTag, "Transaction signing complete — JWT ready to send to payment service")
+                runOnUiThread {
+                    // jwt is now available to POST to your payment microservice
+                    showDialog("Transaction Signing", "Transaction signed successfully")
+                }
             }
             override fun onException(e: Exception) {
                 Logger.error(classNameTag, e.message, e)
                 pendingPaymentClaims = emptyMap()
+                lastSignedJwt = null
                 runOnUiThread { showDialog("Transaction Signing Failed", e.message ?: "Unknown error") }
             }
             override fun onCallbackReceived(node: Node) {
@@ -431,7 +439,10 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                         node.getCallback(DeviceSigningVerifierCallback::class.java).sign(
                             activity,
                             customClaims = pendingPaymentClaims,
-                            deviceAuthenticator = brandedDeviceAuthenticator(),
+                            deviceAuthenticator = brandedDeviceAuthenticator { jws ->
+                                lastSignedJwt = jws
+                                Logger.debug(classNameTag, "SIGNED_JWT: $jws")
+                            },
                             listener = object : FRListener<Void?> {
                                 override fun onSuccess(result: Void?) { node.next(activity, listener) }
                                 override fun onException(e: Exception) { node.next(activity, listener) }
