@@ -52,6 +52,7 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
     private val resetBindingButton: Button by lazy { findViewById(R.id.resetBinding) }
     private val classNameTag = MainActivity::class.java.name
     private val prefs by lazy { getSharedPreferences("device_binding_prefs", MODE_PRIVATE) }
+    private var pendingPaymentClaims: Map<String, Any> = emptyMap()
 
     private fun isDeviceBound(): Boolean {
         val bound = prefs.getBoolean("is_bound", false)
@@ -367,12 +368,30 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
     }
 
     override fun transactionSign() {
+        Logger.debug(classNameTag, "transactionSign() called — showing PaymentDialogFragment")
+        val dialog = PaymentDialogFragment()
+        dialog.onConfirm = { amount, recipient ->
+            Logger.debug(classNameTag, "Payment confirmed: amount=$amount recipient=$recipient — starting transaction signing flow")
+            pendingPaymentClaims = mapOf(
+                "amount" to amount,
+                "currency" to "GBP",
+                "recipient" to recipient,
+                "timestamp" to System.currentTimeMillis()
+            )
+            startTransactionSignFlow()
+        }
+        dialog.show(supportFragmentManager, PaymentDialogFragment.TAG)
+    }
+
+    private fun startTransactionSignFlow() {
         val listener = object : NodeListener<FRSession> {
             override fun onSuccess(result: FRSession) {
+                pendingPaymentClaims = emptyMap()
                 runOnUiThread { showDialog("Transaction Signing", "Transaction signed successfully") }
             }
             override fun onException(e: Exception) {
                 Logger.error(classNameTag, e.message, e)
+                pendingPaymentClaims = emptyMap()
                 runOnUiThread { showDialog("Transaction Signing Failed", e.message ?: "Unknown error") }
             }
             override fun onCallbackReceived(node: Node) {
@@ -402,10 +421,15 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                 "DeviceSigningVerifierCallback" -> {
                     runOnUiThread {
                         dismissNodeDialog()
-                        node.getCallback(DeviceSigningVerifierCallback::class.java).sign(activity, listener = object : FRListener<Void?> {
-                            override fun onSuccess(result: Void?) { node.next(activity, listener) }
-                            override fun onException(e: Exception) { node.next(activity, listener) }
-                        })
+                        Logger.debug(classNameTag, "DeviceSigningVerifierCallback — signing with customClaims=$pendingPaymentClaims")
+                        node.getCallback(DeviceSigningVerifierCallback::class.java).sign(
+                            activity,
+                            customClaims = pendingPaymentClaims,
+                            listener = object : FRListener<Void?> {
+                                override fun onSuccess(result: Void?) { node.next(activity, listener) }
+                                override fun onException(e: Exception) { node.next(activity, listener) }
+                            }
+                        )
                     }
                 }
                 else -> {
