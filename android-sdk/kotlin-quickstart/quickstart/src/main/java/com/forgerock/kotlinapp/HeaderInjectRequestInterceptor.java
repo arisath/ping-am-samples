@@ -1,4 +1,4 @@
-package com.forgerock.kotlinapp;
+package com.novapay.app;
 import static org.forgerock.android.auth.Action.AUTHENTICATE;
 import static org.forgerock.android.auth.Action.START_AUTHENTICATE;
 import android.net.Uri;

@@ -1,10 +1,4 @@
-/*
- * Copyright (c) 2022 - 2025 Ping Identity Corporation. All rights reserved.
- *
- * This software may be modified and distributed under the terms
- * of the MIT license. See the LICENSE file for details.
- */
-package com.forgerock.kotlinapp
+package com.novapay.app
 
 import android.os.Bundle
 import android.view.View
@@ -33,7 +27,6 @@ class FRSessionActivity: AppCompatActivity(), NodeListener<FRSession>, ActivityL
         setContentView(R.layout.activity_main)
         updateStatus(showLogin = true)
         loginButton.setOnClickListener {
-            // FRSession.authenticate() method will take as an input the Tree/Journey name and output the SSO token, to get a Access Token you have to invoke the getAccessToken method.
             val journeyName = "SimpleLogin"
             FRSession.authenticate(this, journeyName, this)
         }
@@ -126,7 +119,7 @@ class FRSessionActivity: AppCompatActivity(), NodeListener<FRSession>, ActivityL
                 runOnUiThread { nodeDialog?.show(supportFragmentManager, NodeDialogFragment::class.java.name) }
             }
         }
-        FRSession.authenticate(this, getString(R.string.forgerock_device_bind_service), listener)
+        FRSession.authenticate(this, getString(R.string.am_device_bind_service), listener)
     }
 
     override fun transactionSign() {
@@ -144,7 +137,7 @@ class FRSessionActivity: AppCompatActivity(), NodeListener<FRSession>, ActivityL
                 runOnUiThread { nodeDialog?.show(supportFragmentManager, NodeDialogFragment::class.java.name) }
             }
         }
-        FRSession.authenticate(this, getString(R.string.forgerock_transaction_sign_service), listener)
+        FRSession.authenticate(this, getString(R.string.am_transaction_sign_service), listener)
     }
 
     private fun showDialog(title: String, message: String) {

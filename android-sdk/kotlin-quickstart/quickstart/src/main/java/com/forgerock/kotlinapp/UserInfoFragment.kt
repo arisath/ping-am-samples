@@ -1,10 +1,4 @@
-/*
- * Copyright (c) 2022 - 2025 Ping Identity Corporation. All rights reserved.
- *
- * This software may be modified and distributed under the terms
- * of the MIT license. See the LICENSE file for details.
- */
-package com.forgerock.kotlinapp
+package com.novapay.app
 
 import android.os.Bundle
 import android.text.method.ScrollingMovementMethod
@@ -16,33 +10,24 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import org.forgerock.android.auth.Logger
 
-
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-private const val ARG_PARAM3 = "param3"
+private const val ARG_ACCESS_TOKEN = "access_token"
+private const val ARG_REFRESH_TOKEN = "refresh_token"
+private const val ARG_ID_TOKEN = "id_token"
 private const val ARG_IS_BOUND = "is_bound"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [UserInfoFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class UserInfoFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
-    private var param3: String? = null
+    private var accessToken: String? = null
+    private var refreshToken: String? = null
+    private var idToken: String? = null
     private var isBound: Boolean = false
     private var listener: ActivityListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-            param3 = it.getString(ARG_PARAM3)
+            accessToken = it.getString(ARG_ACCESS_TOKEN)
+            refreshToken = it.getString(ARG_REFRESH_TOKEN)
+            idToken = it.getString(ARG_ID_TOKEN)
             isBound = it.getBoolean(ARG_IS_BOUND, false)
         }
     }
@@ -51,7 +36,6 @@ class UserInfoFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_user_info, container, false)
     }
 
@@ -59,15 +43,15 @@ class UserInfoFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Logger.debug(TAG, "onViewCreated: isBound=$isBound — setting up buttons accordingly")
 
-        val accessToken: TextView = view.findViewById(R.id.accessToken)
-        accessToken.movementMethod = ScrollingMovementMethod()
-        accessToken.text = param1
-        val refreshToken: TextView = view.findViewById(R.id.refreshToken)
-        refreshToken.movementMethod = ScrollingMovementMethod()
-        refreshToken.text = param2
-        val idToken: TextView = view.findViewById(R.id.idToken)
-        idToken.movementMethod = ScrollingMovementMethod()
-        idToken.text = param3
+        val accessTokenView: TextView = view.findViewById(R.id.accessToken)
+        accessTokenView.movementMethod = ScrollingMovementMethod()
+        accessTokenView.text = accessToken
+        val refreshTokenView: TextView = view.findViewById(R.id.refreshToken)
+        refreshTokenView.movementMethod = ScrollingMovementMethod()
+        refreshTokenView.text = refreshToken
+        val idTokenView: TextView = view.findViewById(R.id.idToken)
+        idTokenView.movementMethod = ScrollingMovementMethod()
+        idTokenView.text = idToken
 
         val logout: Button = view.findViewById(R.id.logout)
         logout.setOnClickListener { listener?.logout() }
@@ -84,23 +68,14 @@ class UserInfoFragment : Fragment() {
     }
 
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment UserInfoFragment.
-         */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
-        fun newInstance(param1: String?, param2: String?, param3: String?, listener: ActivityListener?, isBound: Boolean = false) =
+        fun newInstance(accessToken: String?, refreshToken: String?, idToken: String?, listener: ActivityListener?, isBound: Boolean = false) =
             UserInfoFragment().apply {
                 this.listener = listener
                 arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                    putString(ARG_PARAM3, param3)
+                    putString(ARG_ACCESS_TOKEN, accessToken)
+                    putString(ARG_REFRESH_TOKEN, refreshToken)
+                    putString(ARG_ID_TOKEN, idToken)
                     putBoolean(ARG_IS_BOUND, isBound)
                 }
             }

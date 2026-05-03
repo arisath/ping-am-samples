@@ -1,10 +1,3 @@
-/*
- * Copyright (c) 2022-2025 Ping Identity Corporation. All rights reserved.
- *
- * This software may be modified and distributed under the terms
- * of the MIT license. See the LICENSE file for details.
- */
-
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
@@ -12,21 +5,21 @@ plugins {
 
 android {
 
-    namespace 'com.forgerock.kotlinapp'
+    namespace 'com.novapay.app'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.forgerock.kotlinapp"
+        applicationId "com.novapay.app"
         minSdk 23
         targetSdk 35
         versionCode 1
         versionName "1.0"
 
-        resValue "string", "forgerock_sso_permission", "com.forgerock.permission"
+        resValue "string", "novapay_sso_permission", "com.novapay.permission"
 
         manifestPlaceholders = [
                 appAuthRedirectScheme: "org.forgerock.demo",
-                forgerock_sso_permission :"com.forgerock.permission"
+                novapay_sso_permission: "com.novapay.permission"
         ]
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

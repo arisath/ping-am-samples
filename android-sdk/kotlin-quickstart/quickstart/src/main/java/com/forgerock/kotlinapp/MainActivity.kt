@@ -1,10 +1,4 @@
-/*
- * Copyright (c) 2022 - 2025 Ping Identity Corporation. All rights reserved.
- *
- * This software may be modified and distributed under the terms
- * of the MIT license. See the LICENSE file for details.
- */
-package com.forgerock.kotlinapp
+package com.novapay.app
 
 import android.content.DialogInterface
 import android.os.Build
@@ -121,12 +115,9 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
     private fun centralizedLogin() {
         FRUser.browser().appAuthConfigurer()
             .authorizationRequest { r: AuthorizationRequest.Builder ->
-                // Add a login hint parameter about the user:
                 r.setLoginHint("demo@example.com")
-                // Request that the user re-authenticates:
                 r.setPrompt("login")
             }.customTabsIntent { t: CustomTabsIntent.Builder ->
-                // Customize the browser:
                 t.setShowTitle(true)
                 t.setToolbarColor(ContextCompat.getColor(this, android.R.color.holo_green_dark))
             }.done().login(this, object : FRListener<FRUser?> {
@@ -212,17 +203,11 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
         Logger.error(classNameTag, e?.message, e)
         runOnUiThread {
             val dialogBuilder = AlertDialog.Builder(this)
-            // set message of alert dialog
             dialogBuilder.setMessage("Login Failed. Retry Again")
-                // if the dialog is cancelable
                 .setCancelable(false)
-                // positive button text and action
                 .setPositiveButton("OK", DialogInterface.OnClickListener { _, _ -> })
-            // create dialog box
             val alert = dialogBuilder.create()
-            // set title for alert dialog box
             alert.setTitle("Unauthorized")
-            // show alert dialog
             alert.show()
         }
     }
@@ -370,7 +355,7 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                 handleSessionNode(node, this)
             }
         }
-        FRSession.authenticate(applicationContext, getString(R.string.forgerock_device_bind_service), listener)
+        FRSession.authenticate(applicationContext, getString(R.string.am_device_bind_service), listener)
     }
 
     override fun transactionSign() {
@@ -396,7 +381,6 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                 pendingPaymentClaims = emptyMap()
                 Logger.debug(classNameTag, "Transaction signing complete — JWT ready to send to payment service")
                 runOnUiThread {
-                    // jwt is now available to POST to your payment microservice
                     showDialog("Transaction Signing", "Transaction signed successfully")
                 }
             }
@@ -410,7 +394,7 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                 handleSessionNode(node, this)
             }
         }
-        FRSession.authenticate(applicationContext, getString(R.string.forgerock_transaction_sign_service), listener)
+        FRSession.authenticate(applicationContext, getString(R.string.am_transaction_sign_service), listener)
     }
 
     private fun dismissNodeDialog() {
