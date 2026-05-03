@@ -2,14 +2,13 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/white">
 
-    <!-- Navy header strip -->
+    <!-- Navy header -->
     <View
-        android:id="@+id/dialog_header"
+        android:id="@+id/header_bar"
         android:layout_width="match_parent"
         android:layout_height="6dp"
         android:background="@color/bank_navy"
@@ -17,127 +16,104 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Logo icon -->
+    <!-- Lock icon -->
     <TextView
-        android:id="@+id/login_icon"
+        android:id="@+id/lock_icon"
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:layout_marginTop="24dp"
         android:background="@drawable/bg_logo_circle"
         android:gravity="center"
-        android:text="🏦"
+        android:text="🔒"
         android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dialog_header" />
+        app:layout_constraintTop_toBottomOf="@+id/header_bar" />
 
     <TextView
-        android:id="@+id/dialog_title"
+        android:id="@+id/pin_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="14dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="24dp"
         android:gravity="center"
-        android:text="Verify Your Identity"
         android:textColor="@color/bank_navy"
         android:textSize="18sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/login_icon" />
+        app:layout_constraintTop_toBottomOf="@+id/lock_icon" />
 
     <TextView
-        android:id="@+id/dialog_subtitle"
+        android:id="@+id/pin_subtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="4dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginEnd="24dp"
         android:gravity="center"
-        android:text="Enter your credentials to continue"
         android:textColor="@color/bank_text_secondary"
         android:textSize="13sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dialog_title" />
+        app:layout_constraintTop_toBottomOf="@+id/pin_title" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/usernameLayout"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+    <TextView
+        android:id="@+id/pin_description"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
-        android:visibility="gone"
-        app:boxStrokeColor="@color/bank_navy"
-        app:hintTextColor="@color/bank_navy"
-        tools:visibility="visible"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="24dp"
+        android:gravity="center"
+        android:textColor="@color/bank_text_secondary"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/dialog_subtitle">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/username"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Username"
-            android:inputType="text"
-            android:textColor="@color/bank_text_primary" />
-    </com.google.android.material.textfield.TextInputLayout>
+        app:layout_constraintTop_toBottomOf="@+id/pin_subtitle" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/passwordLayout"
+        android:id="@+id/pinLayout"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="20dp"
-        android:visibility="gone"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
         app:boxStrokeColor="@color/bank_navy"
         app:hintTextColor="@color/bank_navy"
         app:passwordToggleEnabled="true"
-        tools:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/usernameLayout">
+        app:layout_constraintTop_toBottomOf="@+id/pin_description">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/password"
+            android:id="@+id/pin_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Password"
-            android:inputType="textPassword"
-            android:textColor="@color/bank_text_primary" />
+            android:hint="PIN"
+            android:inputType="numberPassword"
+            android:textColor="@color/bank_text_primary"
+            android:letterSpacing="0.3"
+            android:gravity="center" />
     </com.google.android.material.textfield.TextInputLayout>
-
-    <include
-        android:id="@+id/choice_node"
-        layout="@layout/choice_node"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/passwordLayout"
-        tools:visibility="visible" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginEnd="24dp"
         android:layout_marginBottom="24dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/choice_node">
+        app:layout_constraintTop_toBottomOf="@+id/pinLayout">
 
         <Button
-            android:id="@+id/cancel"
+            android:id="@+id/btn_cancel"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="48dp"
@@ -148,13 +124,13 @@
             app:strokeColor="@color/bank_navy" />
 
         <Button
-            android:id="@+id/next"
+            android:id="@+id/btn_confirm"
             style="@style/Widget.MaterialComponents.Button"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
             android:backgroundTint="@color/bank_navy"
-            android:text="Continue"
+            android:text="Confirm"
             android:textColor="@color/white" />
 
     </LinearLayout>

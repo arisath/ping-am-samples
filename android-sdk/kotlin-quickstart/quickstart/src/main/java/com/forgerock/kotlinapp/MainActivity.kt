@@ -239,7 +239,9 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                         runOnUiThread {
                             val deviceBindingCallback =
                                 node.getCallback(DeviceBindingCallback::class.java)
-                            deviceBindingCallback.bind(activity, listener =  object : FRListener<Void?> {
+                            deviceBindingCallback.bind(activity,
+                                deviceAuthenticator = brandedDeviceAuthenticator(),
+                                listener = object : FRListener<Void?> {
                                 override fun onSuccess(result: Void?) {
                                     node.next(activity, activity)
                                 }
@@ -254,7 +256,9 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                         runOnUiThread {
                             val deviceBindingCallback =
                                 node.getCallback(DeviceSigningVerifierCallback::class.java)
-                            deviceBindingCallback.sign(activity, listener = object : FRListener<Void?> {
+                            deviceBindingCallback.sign(activity,
+                                deviceAuthenticator = brandedDeviceAuthenticator(),
+                                listener = object : FRListener<Void?> {
                                 override fun onSuccess(result: Void?) {
                                     node.next(activity, activity)
                                 }
@@ -412,7 +416,9 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                 "DeviceBindingCallback" -> {
                     runOnUiThread {
                         dismissNodeDialog()
-                        node.getCallback(DeviceBindingCallback::class.java).bind(activity, listener = object : FRListener<Void?> {
+                        node.getCallback(DeviceBindingCallback::class.java).bind(activity,
+                            deviceAuthenticator = brandedDeviceAuthenticator(),
+                            listener = object : FRListener<Void?> {
                             override fun onSuccess(result: Void?) { node.next(activity, listener) }
                             override fun onException(e: Exception) { node.next(activity, listener) }
                         })
@@ -425,6 +431,7 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                         node.getCallback(DeviceSigningVerifierCallback::class.java).sign(
                             activity,
                             customClaims = pendingPaymentClaims,
+                            deviceAuthenticator = brandedDeviceAuthenticator(),
                             listener = object : FRListener<Void?> {
                                 override fun onSuccess(result: Void?) { node.next(activity, listener) }
                                 override fun onException(e: Exception) { node.next(activity, listener) }
