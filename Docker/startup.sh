@@ -85,6 +85,11 @@ exit
 EOF
 
 
-# 4. Bring Tomcat to foreground to keep container running
+# 4. Create test users in the identity store
+echo "Creating test users..."
+ldapadd -h localhost -p 1389 -D "uid=admin" -w password -c -f /usr/local/test-users.ldif && \
+    echo "Test users created." || echo "Test users already exist or failed to create, continuing..."
+
+# 5. Bring Tomcat to foreground to keep container running
 # We tail the log so the container output stays active
 tail -f /usr/local/tomcat/logs/catalina.out

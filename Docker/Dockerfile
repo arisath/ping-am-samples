@@ -6,6 +6,7 @@ RUN apt-get update && apt-get install -y curl \
 
 # 1. Copy individual scripts directly to /usr/local/
 COPY --chmod=775 startup.sh ds-install.sh /usr/local/
+COPY test-users.ldif /usr/local/test-users.ldif
 
 # 2. Copy directories (this preserves the folder name at the destination)
 COPY --chmod=775 amster /usr/local/amster/

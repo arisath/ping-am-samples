@@ -1,0 +1,70 @@
+{
+  "metadata" : {
+    "realm" : "/android",
+    "amsterVersion" : "8.1.0",
+    "entityType" : "AuthTree",
+    "entityId" : "DeviceBinding",
+    "pathParams" : { }
+  },
+  "data" : {
+    "_id" : "DeviceBinding",
+    "entryNodeId" : "29ea69ad-6ead-4c2f-bc9e-d0de79ed3e9e",
+    "innerTreeOnly" : false,
+    "noSession" : false,
+    "mustRun" : false,
+    "enabled" : true,
+    "transactionalOnly" : false,
+    "uiConfig" : { },
+    "nodes" : {
+      "d033ef9a-55f0-42c6-a5b8-dbe1ce1a21dc" : {
+        "displayName" : "Device Binding",
+        "nodeType" : "DeviceBindingNode",
+        "version" : "1.0",
+        "x" : 375,
+        "y" : 151,
+        "connections" : {
+          "success" : "70e691a5-1e33-4ac3-a356-e7b6d60d92e0",
+          "failure" : "e301438c-0bd0-429c-ab0c-66126501069a",
+          "Unsupported" : "e301438c-0bd0-429c-ab0c-66126501069a",
+          "Abort" : "e301438c-0bd0-429c-ab0c-66126501069a",
+          "Timeout" : "e301438c-0bd0-429c-ab0c-66126501069a"
+        }
+      },
+      "29ea69ad-6ead-4c2f-bc9e-d0de79ed3e9e" : {
+        "displayName" : "Page Node",
+        "nodeType" : "PageNode",
+        "version" : "2.0",
+        "x" : 38.99609375,
+        "y" : 161.80078125,
+        "connections" : {
+          "c6251a71-51f0-4d91-acee-863df5400835-outcome" : "f2c44daf-4237-41eb-a898-7d762aa1b5cd"
+        }
+      },
+      "f2c44daf-4237-41eb-a898-7d762aa1b5cd" : {
+        "displayName" : "Data Store Decision",
+        "nodeType" : "DataStoreDecisionNode",
+        "version" : "1.0",
+        "x" : 195,
+        "y" : 370,
+        "connections" : {
+          "true" : "d033ef9a-55f0-42c6-a5b8-dbe1ce1a21dc",
+          "false" : "e301438c-0bd0-429c-ab0c-66126501069a"
+        }
+      }
+    },
+    "staticNodes" : {
+      "startNode" : {
+        "x" : 50,
+        "y" : 25
+      },
+      "70e691a5-1e33-4ac3-a356-e7b6d60d92e0" : {
+        "x" : 831,
+        "y" : 171
+      },
+      "e301438c-0bd0-429c-ab0c-66126501069a" : {
+        "x" : 610,
+        "y" : 244
+      }
+    }
+  }
+}

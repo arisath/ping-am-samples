@@ -1,0 +1,45 @@
+{
+  "metadata" : {
+    "realm" : "/android",
+    "amsterVersion" : "8.1.0",
+    "entityType" : "AuthTree",
+    "entityId" : "TransactionSigning",
+    "pathParams" : { }
+  },
+  "data" : {
+    "_id" : "TransactionSigning",
+    "entryNodeId" : "f6986cf0-a0d9-4aa0-86c2-d175c60fa16c",
+    "innerTreeOnly" : false,
+    "noSession" : false,
+    "mustRun" : false,
+    "enabled" : true,
+    "transactionalOnly" : false,
+    "uiConfig" : { },
+    "nodes" : {
+      "8f6986cf0-a0d9-4aa0-86c2-d175c60fa16c" : {
+        "displayName" : "Username Collector",
+        "nodeType" : "UsernameCollectorNode",
+        "version" : "2.0",
+        "x" : 185.99609375,
+        "y" : 107.58203125,
+        "connections" : {
+          "outcome" : "70e691a5-1e33-4ac3-a356-e7b6d60d92e0"
+        }
+      }
+    },
+    "staticNodes" : {
+      "startNode" : {
+        "x" : 50,
+        "y" : 25
+      },
+      "70e691a5-1e33-4ac3-a356-e7b6d60d92e0" : {
+        "x" : 423,
+        "y" : 90
+      },
+      "e301438c-0bd0-429c-ab0c-66126501069a" : {
+        "x" : 151.328125,
+        "y" : 25
+      }
+    }
+  }
+}

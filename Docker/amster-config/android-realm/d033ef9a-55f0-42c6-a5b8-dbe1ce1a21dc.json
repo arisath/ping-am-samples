@@ -1,0 +1,45 @@
+{
+  "metadata" : {
+    "realm" : "/android",
+    "amsterVersion" : "8.1.0",
+    "entityType" : "DeviceBinding",
+    "entityId" : "d033ef9a-55f0-42c6-a5b8-dbe1ce1a21dc",
+    "pathParams" : { }
+  },
+  "data" : {
+    "_id" : "d033ef9a-55f0-42c6-a5b8-dbe1ce1a21dc",
+    "subtitle" : { },
+    "maxSavedDevices" : 0,
+    "authenticationType" : "APPLICATION_PIN",
+    "skewAllowance" : 60,
+    "description" : { },
+    "applicationIds" : [ "com.forgerock.kotlinapp" ],
+    "title" : { },
+    "postponeDeviceProfileStorage" : false,
+    "clientErrorOutcomes" : [ "Unsupported", "Abort", "Timeout" ],
+    "attestation" : false,
+    "timeout" : 60,
+    "_type" : {
+      "_id" : "DeviceBindingNode",
+      "name" : "Device Binding",
+      "collection" : true,
+      "version" : "1.0"
+    },
+    "_outcomes" : [ {
+      "id" : "success",
+      "displayName" : "Success"
+    }, {
+      "id" : "failure",
+      "displayName" : "Failure"
+    }, {
+      "id" : "Unsupported",
+      "displayName" : "Unsupported"
+    }, {
+      "id" : "Abort",
+      "displayName" : "Abort"
+    }, {
+      "id" : "Timeout",
+      "displayName" : "Timeout"
+    } ]
+  }
+}

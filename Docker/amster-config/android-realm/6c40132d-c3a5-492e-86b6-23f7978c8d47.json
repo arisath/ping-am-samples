@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "realm": "/android",
+    "amsterVersion": "8.1.0",
+    "entityType": "UsernameCollector2",
+    "entityId": "f6986cf0-a0d9-4aa0-86c2-d175c60fa16c",
+    "pathParams": {}
+  },
+  "data": {
+    "_id": "f6986cf0-a0d9-4aa0-86c2-d175c60fa16c",
+    "prepopulate": false,
+    "autocompleteValues": [],
+    "_type": {
+      "_id": "UsernameCollectorNode",
+      "name": "Username Collector",
+      "collection": true,
+      "version": "2.0"
+    },
+    "_outcomes": [
+      {
+        "id": "outcome",
+        "displayName": "Outcome"
+      }
+    ]
+  }
+}

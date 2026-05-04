@@ -1,0 +1,12 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.NovaPay" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/bank_navy</item>
+        <item name="colorPrimaryVariant">@color/bank_navy_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/bank_gold</item>
+        <item name="colorSecondaryVariant">@color/bank_gold</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/bank_navy_dark</item>
+        <item name="android:windowBackground">@color/bank_surface</item>
+    </style>
+</resources>

@@ -1,0 +1,16 @@
+{
+  "metadata" : {
+    "realm" : null,
+    "amsterVersion" : "8.1.0",
+    "entityType" : "Realms",
+    "entityId" : "L2FuZHJvaWQ",
+    "pathParams" : { }
+  },
+  "data" : {
+    "_id" : "L2FuZHJvaWQ",
+    "parentPath" : "/",
+    "active" : true,
+    "name" : "android",
+    "aliases" : [ "10.0.2.2" ]
+  }
+}
