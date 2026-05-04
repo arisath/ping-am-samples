@@ -20,10 +20,8 @@ DEPLOYMENT_ID=$(/usr/local/opendj/bin/dskeymgr create-deployment-id -w password 
  --httpsPort 8443 \
  --profile am-config \
  --set am-config/amConfigAdminPassword:password \
- --profile ds-user-data \
- --set ds-user-data/backendName:userData \
- --set ds-user-data/addBaseEntry:true \
- --set ds-user-data/baseDn:dc=example,dc=com \
+ --profile am-identity-store \
+ --set am-identity-store/amIdentityStoreAdminPassword:password \
  --profile am-cts \
  --hostname localhost \
  --set am-cts/amCtsAdminPassword:password \
@@ -46,6 +44,7 @@ echo "DS is ready."
   --policy-name "Default Password Policy" \
   --set 'require-secure-authentication:false' \
   --set 'require-secure-password-changes:false' \
+  --reset password-validator \
   --hostname localhost --port 4444 \
   --bindDN "uid=admin" --bindPassword password \
   --trustAll --no-prompt
@@ -59,17 +58,3 @@ echo "DS is ready."
   --bindDN "uid=admin" --bindPassword password \
   --trustAll --no-prompt
 
-printf 'dn: ou=people,dc=example,dc=com\nchangetype: add\nobjectClass: top\nobjectClass: organizationalUnit\nou: people\n' > /tmp/people.ldif
-printf 'dn: ou=groups,dc=example,dc=com\nchangetype: add\nobjectClass: top\nobjectClass: organizationalUnit\nou: groups\n' > /tmp/groups.ldif
-
-/usr/local/opendj/bin/ldapmodify --hostname localhost --port 1389 \
-  --bindDN "uid=admin" --bindPassword password \
-  --filename /tmp/people.ldif
-
-/usr/local/opendj/bin/ldapmodify --hostname localhost --port 1389 \
-  --bindDN "uid=admin" --bindPassword password \
-  --filename /tmp/groups.ldif
-
-
-/usr/local/opendj/bin/dsconfig get-password-policy-prop --policy-name "Default Password Policy" --property password-validator --hostname localhost --port 4444 --bindDN "uid=admin" --bindPassword password --no-prompt --trustAll                                                                                                                                                          
-                                

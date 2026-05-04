@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-/usr/local/ds-install.sh
-
-# 1. Start Tomcat in the background
+# 1. Start Tomcat in the background so WAR deploys in parallel with DS setup
 catalina.sh start
+
+/usr/local/ds-install.sh
 
 echo "Waiting for AM to deploy at http://localhost:8080/am..."
 
@@ -46,7 +46,7 @@ install-openam  --acceptLicense \
  --userStorePort 1389 \
  --userStoreSsl SIMPLE \
  --userStoreDirMgr uid=admin \
- --userStoreRootSuffix "dc=example,dc=com"
+ --userStoreRootSuffix "ou=identities"
 exit
 EOF
 
