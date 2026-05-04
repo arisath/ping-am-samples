@@ -24,5 +24,6 @@
     <string name="am_auth_service" translatable="false">Login</string>
     <string name="am_device_bind_service" translatable="false">DeviceBinding</string>
     <string name="am_transaction_sign_service" translatable="false">TransactionSigning</string>
+    <string name="am_web_otp_service" translatable="false">WebOTP</string>
 
 </resources>

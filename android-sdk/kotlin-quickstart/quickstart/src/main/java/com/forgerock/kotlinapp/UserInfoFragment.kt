@@ -65,6 +65,11 @@ class UserInfoFragment : Fragment() {
         transactionSign.visibility = if (isBound) View.VISIBLE else View.GONE
         Logger.debug(TAG, "onViewCreated: transactionSign button visible=$isBound (device is bound)")
         transactionSign.setOnClickListener { listener?.transactionSign() }
+
+        val generateWebOtp: Button = view.findViewById(R.id.generateWebOtp)
+        generateWebOtp.visibility = if (isBound) View.VISIBLE else View.GONE
+        Logger.debug(TAG, "onViewCreated: generateWebOtp button visible=$isBound (device is bound)")
+        generateWebOtp.setOnClickListener { listener?.generateWebOtp() }
     }
 
     companion object {

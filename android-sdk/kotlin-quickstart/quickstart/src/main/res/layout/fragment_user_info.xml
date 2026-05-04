@@ -119,6 +119,17 @@
                         android:textSize="13sp" />
 
                 </LinearLayout>
+
+                <Button
+                    android:id="@+id/generateWebOtp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Generate Web OTP"
+                    android:textSize="13sp"
+                    app:strokeColor="@color/bank_navy"
+                    android:textColor="@color/bank_navy" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

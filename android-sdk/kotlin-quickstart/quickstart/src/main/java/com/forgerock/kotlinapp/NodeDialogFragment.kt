@@ -22,6 +22,7 @@ import org.forgerock.android.auth.callback.PasswordCallback
 class NodeDialogFragment: DialogFragment() {
     private var node: Node? = null
     var nodeListener: org.forgerock.android.auth.NodeListener<*>? = null
+    var onValuesCaptured: ((username: String) -> Unit)? = null
     companion object {
         fun newInstance(node: Node?): NodeDialogFragment {
             return NodeDialogFragment().apply {
@@ -90,9 +91,10 @@ class NodeDialogFragment: DialogFragment() {
         val password: TextInputEditText = view.findViewById(R.id.password)
         val next: Button = view.findViewById(R.id.next)
         next.setOnClickListener {
-
-            node?.getCallback(NameCallback::class.java)?.setName(username.text.toString())
+            val usernameText = username.text.toString()
+            node?.getCallback(NameCallback::class.java)?.setName(usernameText)
             node?.getCallback(PasswordCallback::class.java)?.setPassword(password.text.toString().toCharArray())
+            if (usernameText.isNotEmpty()) onValuesCaptured?.invoke(usernameText)
 
             val customListener = nodeListener
             if (customListener != null) {

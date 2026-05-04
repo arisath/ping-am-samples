@@ -23,7 +23,9 @@ import org.forgerock.android.auth.callback.DeviceBindingCallback
 import org.forgerock.android.auth.callback.DeviceProfileCallback
 import org.forgerock.android.auth.callback.DeviceSigningVerifierCallback
 import org.forgerock.android.auth.callback.IdPCallback
+import org.forgerock.android.auth.callback.MetadataCallback
 import org.forgerock.android.auth.callback.SelectIdPCallback
+import org.forgerock.android.auth.callback.TextOutputCallback
 import org.forgerock.android.auth.callback.WebAuthnAuthenticationCallback
 import org.forgerock.android.auth.callback.WebAuthnRegistrationCallback
 import org.forgerock.android.auth.devicebind.DeviceBindFragment
@@ -34,6 +36,7 @@ interface ActivityListener {
     fun logout()
     fun deviceBind()
     fun transactionSign()
+    fun generateWebOtp()
 }
 
 class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener {
@@ -49,6 +52,7 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
     private var pendingPaymentClaims: Map<String, Any> = emptyMap()
     var lastSignedJwt: String? = null
         private set
+    private var capturedBindingUsername: String? = null
 
     private fun isDeviceBound(): Boolean {
         val bound = prefs.getBoolean("is_bound", false)
@@ -56,17 +60,19 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
         return bound
     }
 
-    private fun markDeviceBound() {
-        Logger.debug(classNameTag, "markDeviceBound() called — persisting is_bound=true")
-        prefs.edit().putBoolean("is_bound", true).apply()
+    private fun markDeviceBound(username: String) {
+        Logger.debug(classNameTag, "markDeviceBound() called — persisting is_bound=true, username=$username")
+        prefs.edit().putBoolean("is_bound", true).putString("bound_username", username).apply()
         Logger.debug(classNameTag, "markDeviceBound() complete")
     }
 
     private fun clearDeviceBound() {
         Logger.debug(classNameTag, "clearDeviceBound() called — removing is_bound from SharedPrefs (test reset)")
-        prefs.edit().remove("is_bound").apply()
+        prefs.edit().remove("is_bound").remove("bound_username").apply()
         Logger.debug(classNameTag, "clearDeviceBound() complete — isDeviceBound() now=${isDeviceBound()}")
     }
+
+    private fun boundUsername(): String? = prefs.getString("bound_username", null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -145,7 +151,7 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
             status.visibility = View.VISIBLE
             status.text = when {
                 !bound -> "Bind this device to get started"
-                showLogin -> "Sign in to access your account"
+                showLogin -> "Welcome back, ${boundUsername()?.takeIf { it.isNotEmpty() } ?: "there"}! Sign in to continue."
                 else -> "User is authenticated"
             }
             Logger.debug(classNameTag, "updateStatus: statusText='${status.text}'")
@@ -337,14 +343,16 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
     }
 
     override fun deviceBind() {
+        capturedBindingUsername = null
         val listener = object : NodeListener<FRSession> {
             override fun onSuccess(result: FRSession) {
-                Logger.debug(classNameTag, "deviceBind() onSuccess — device binding flow completed, marking device as bound")
-                markDeviceBound()
+                val username = capturedBindingUsername ?: ""
+                Logger.debug(classNameTag, "deviceBind() onSuccess — capturedBindingUsername=$capturedBindingUsername, saving username='$username'")
+                markDeviceBound(username)
                 Logger.debug(classNameTag, "deviceBind() onSuccess — isDeviceBound() now=${isDeviceBound()}")
                 runOnUiThread {
-                    updateSecurityButtons()
-                    showDialog("Device Binding", "Device bound successfully")
+                    updateStatus(showLogin = true)
+                    showDialog("Device Bound", "Your device is now registered. Sign in to continue.")
                 }
             }
             override fun onException(e: Exception) {
@@ -372,6 +380,23 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
             startTransactionSignFlow()
         }
         dialog.show(supportFragmentManager, PaymentDialogFragment.TAG)
+    }
+
+    override fun generateWebOtp() {
+        Logger.debug(classNameTag, "generateWebOtp() called — authenticating bound device against WebOTP tree")
+        val listener = object : NodeListener<FRSession> {
+            override fun onSuccess(result: FRSession) {
+                Logger.debug(classNameTag, "generateWebOtp() onSuccess — AM tree completed")
+            }
+            override fun onException(e: Exception) {
+                Logger.error(classNameTag, e.message, e)
+                runOnUiThread { showDialog("Web OTP Failed", e.message ?: "Unknown error") }
+            }
+            override fun onCallbackReceived(node: Node) {
+                handleSessionNode(node, this)
+            }
+        }
+        FRSession.authenticate(applicationContext, getString(R.string.am_web_otp_service), listener)
     }
 
     private fun startTransactionSignFlow() {
@@ -403,6 +428,7 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
 
     private fun handleSessionNode(node: Node, listener: NodeListener<FRSession>) {
         val activity = this
+        var dialogShown = false
         node.callbacks.forEach { callback ->
             when (callback.type) {
                 "DeviceBindingCallback" -> {
@@ -434,11 +460,47 @@ class MainActivity : AppCompatActivity(), NodeListener<FRUser>, ActivityListener
                         )
                     }
                 }
+                "MetadataCallback" -> {
+                    // AM returns OTP + TTL as JSON: {"data":{"otp":"123456","ttl":300}}
+                    runOnUiThread {
+                        val meta = node.getCallback(MetadataCallback::class.java).value
+                        val otp = meta?.optString("otp", "") ?: ""
+                        val ttl = meta?.optLong("ttl", 300L) ?: 300L
+                        Logger.debug(classNameTag, "MetadataCallback — received web OTP (ttl=${ttl}s)")
+                        if (otp.isNotEmpty()) {
+                            WebOtpDialogFragment.newInstance(otp, ttl)
+                                .show(supportFragmentManager, WebOtpDialogFragment.TAG)
+                        }
+                        node.next(activity, listener)
+                    }
+                }
+                "TextOutputCallback" -> {
+                    // AM returns OTP as a plain text message
+                    runOnUiThread {
+                        val otp = node.getCallback(TextOutputCallback::class.java).message
+                        Logger.debug(classNameTag, "TextOutputCallback — received web OTP")
+                        if (!otp.isNullOrEmpty()) {
+                            WebOtpDialogFragment.newInstance(otp)
+                                .show(supportFragmentManager, WebOtpDialogFragment.TAG)
+                        }
+                        node.next(activity, listener)
+                    }
+                }
                 else -> {
-                    var nodeDialog = supportFragmentManager.findFragmentByTag(NodeDialogFragment.TAG) as? NodeDialogFragment
-                    nodeDialog?.dismiss()
-                    nodeDialog = NodeDialogFragment.newInstance(node).also { it.nodeListener = listener }
-                    runOnUiThread { nodeDialog.show(supportFragmentManager, NodeDialogFragment.TAG) }
+                    if (!dialogShown) {
+                        dialogShown = true
+                        val nodeDialog = (supportFragmentManager.findFragmentByTag(NodeDialogFragment.TAG) as? NodeDialogFragment)
+                            ?.also { it.dismiss() }
+                            .let { NodeDialogFragment.newInstance(node) }
+                            .also {
+                                it.nodeListener = listener
+                                it.onValuesCaptured = { username ->
+                                    Logger.debug(classNameTag, "onValuesCaptured: username=$username")
+                                    capturedBindingUsername = username
+                                }
+                            }
+                        runOnUiThread { nodeDialog.show(supportFragmentManager, NodeDialogFragment.TAG) }
+                    }
                 }
             }
         }

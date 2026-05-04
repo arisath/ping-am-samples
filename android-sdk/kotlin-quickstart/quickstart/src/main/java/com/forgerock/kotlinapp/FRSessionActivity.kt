@@ -140,6 +140,10 @@ class FRSessionActivity: AppCompatActivity(), NodeListener<FRSession>, ActivityL
         FRSession.authenticate(this, getString(R.string.am_transaction_sign_service), listener)
     }
 
+    override fun generateWebOtp() {
+        // Not implemented in this demo activity — use MainActivity for the full Web OTP flow
+    }
+
     private fun showDialog(title: String, message: String) {
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle(title)
